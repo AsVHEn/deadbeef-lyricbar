@@ -1,12 +1,13 @@
-[![Build Status](https://travis-ci.org/loskutov/deadbeef-lyricbar.svg)](https://travis-ci.org/loskutov/deadbeef-lyricbar)
+Based on loskutov lyricbar:
+[![Build Status](https://travis-ci.org/loskutov/deadbeef-lyricbar.svg)](https://travis-ci.org/AsVHEn/deadbeef-lyricbar)
+
+Totally WIP status!!!!!
+
 # DeaDBeeF Lyricbar Plugin
-A simple plugin for DeaDBeeF audio player that fetches and shows the song’s lyrics using LyricWiki.
+Plugin for DeaDBeeF audio player that fetches and shows the song’s lyrics using LyricWiki.
 
-![Screenshot](https://user-images.githubusercontent.com/1202012/51805459-90148b80-227e-11e9-9c0d-1df1d33fe1cd.png)
+![MainWindow](https://user-images.githubusercontent.com/4272271/129489072-7d3b6b56-a8da-4230-b476-3cee2c3ca1bb.png)
 
-
-Inspired by [Infobar Plugin](https://bitbucket.org/dsimbiriatin/deadbeef-infobar/). If you need more functionality,
-check [my fork of it](https://bitbucket.org/IgnatLoskutov/deadbeef-infobar-ng), containing a few bug-fixes and minor improvements.
 
 ## Dependencies
 To use this plugin, you need to have [gtkmm](http://www.gtkmm.org/) and [libxml++ 3](http://libxmlplusplus.sourceforge.net/) installed.
