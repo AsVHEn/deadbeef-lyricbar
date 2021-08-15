@@ -1,6 +1,7 @@
 #include "utils.h"
 
 #include <sys/stat.h>
+#include <curl/curl.h>
 
 #include <algorithm>
 #include <cassert>
@@ -11,6 +12,8 @@
 #include <regex>
 #include <sstream>
 #include <stdexcept>
+#include <thread>
+#include <pthread.h>
 
 #include <giomm.h>
 #include <glibmm/fileutils.h>
@@ -27,16 +30,435 @@ const DB_playItem_t *last;
 
 static const ustring LW_FMT = "http://lyrics.wikia.com/api.php?action=lyrics&fmt=xml&artist=%1&song=%2";
 static const char *home_cache = getenv("XDG_CACHE_HOME");
-static const string lyrics_dir = (home_cache ? string(home_cache) : string(getenv("HOME")) + "/.cache")
+static const std::string lyrics_dir = (home_cache ? string(home_cache) : string(getenv("HOME")) + "/.cache")
                                + "/deadbeef/lyrics/";
 
-static experimental::optional<ustring>(*const providers[])(DB_playItem_t *) = {&get_lyrics_from_script, &download_lyrics_from_lyricwiki};
+		std::string txt = lyrics_dir + "lyric.txt";
+		const char *lyrictxt = txt.c_str();
+		std::string otxt = lyrics_dir + "options.txt";
+		const char *optionstxt = otxt.c_str();
+
+
+
+
+bool lyricstart = false;
+bool syncedfound = true;
+bool syncedlyrics = false;
+bool firstthread = false;
+bool secondthread = false;
+std::string str;
+
+struct sync
+{
+	vector<ustring> synclyrics;
+	vector<double> position;
+};
+
+struct chopped
+{
+	ustring past;
+	ustring present;
+	ustring future;
+};
+
+bool is_playing(DB_playItem_t *track) {
+	DB_playItem_t *pl_track = deadbeef->streamer_get_playing_track();
+	if (!pl_track)
+		return false;
+	deadbeef->pl_item_unref(pl_track);
+	return pl_track == track;
+}
+
+void swap(double *xp, double *yp)
+{
+    double temp = *xp;
+    *xp = *yp;
+    *yp = temp;
+}
+
+void swaptext(ustring *xp, ustring *yp)
+{
+    ustring temp = *xp;
+    *xp = *yp;
+    *yp = temp;
+}
+ 
+// A function to implement bubble sort
+struct sync bubbleSort(vector<double> arr, vector<ustring> text ,  int n)
+{
+	if ((arr.size() == 0) || (text.size() != arr.size())){
+		vector<double> nullposition;
+		vector<ustring> errortext;
+		nullposition.push_back(0);
+		errortext.push_back("Error with lyrics file or metadata");
+		cout << "Error with lyrics file or metadata \n";
+		struct sync error = {errortext, nullposition};
+		return error;
+	}
+	else{
+    	int i, j;
+    	for (i = 0; i < n-1; i++){   
+    		// Last i elements are already in place
+    		for (j = 0; j < n-i-1; j++){
+        		if (arr[j] > arr[j+1]){
+        		    swap(&arr[j], &arr[j+1]);
+					swaptext(&text[j], &text[j+1]);
+				}
+			}
+		}
+	cout << "Bubbleshort resultado \n";
+	struct sync retur = {text,arr};
+	return retur;
+	}
+}
+
+struct sync lyric2vector( ustring lyrics){
+	cout << "lyric2vector" "\n";
+	vector<ustring> synclyrics;
+	vector<double> position;
+	ustring line;
+	int squarebracket;
+	ustring star("[0");
+	int repeats = 0;
+		
+	for (unsigned i=0; i < lyrics.length() - 3; ++i){
+		if ((lyrics.at(i) == '[') && (lyrics.at(i+1) == '0') && (lyrics.at(i+3) == ':') ) {
+  			++repeats;
+			position.push_back ((lyrics.at(i + 1) - 48)*600 + (lyrics.at(i + 2) - 48)*60 + (lyrics.at(i + 4) - 48)*10 + (lyrics.at(i + 5) - 48) + (lyrics.at(i + 7) - 48)*0.1 + (lyrics.at(i + 8) - 48)*0.01);
+			if (lyrics.at(i+10) != '[') {
+				line = lyrics.substr(i + 10, lyrics.length() - i - 10);
+				squarebracket = line.find_first_of('[');
+				if (((lyrics.at(i+8 + squarebracket)) != '\n') && (lyrics.at(i+8 + squarebracket)) != '\r'){
+				line = lyrics.substr(i + 10, squarebracket-1);
+				}
+				else {
+					line = lyrics.substr(i + 10, squarebracket-2);
+				}
+				++repeats;
+				while (--repeats ) {
+					synclyrics.push_back (line);
+				}
+					
+			}
+		}
+	}
+
+	int n = position.size();
+	struct sync  goodlyrics = bubbleSort(position, synclyrics, n);
+	for (auto k = goodlyrics.position.begin(); k != goodlyrics.position.end(); ++k)
+    	std::cout << *k << " ";
+
+	for (auto i = goodlyrics.synclyrics.begin(); i != goodlyrics.synclyrics.end(); ++i)
+    	std::cout << *i << '\n';
+	cout << "Bubbleshort done \n";
+	
+	return goodlyrics;
+}
+
+void write_synced( struct sync lrc, DB_playItem_t *it, int number){
+	float pos = deadbeef->streamer_get_playpos();
+	ustring past = "";
+	ustring present = "";
+	ustring future = "";
+	ustring padding = "";
+	int presentpos = 0;
+	int minimuntopad = 0;
+
+	struct timespec tim, tim2;
+		   tim.tv_sec = 0;
+		   tim.tv_nsec = 50000000;
+
+	if (firstthread == false && secondthread == false){
+		firstthread = true;
+		number = 1;
+	}
+	if (firstthread == false && secondthread == true){
+		if (number != 2){
+			firstthread = true;
+			number = 1;
+		}
+	}
+	else if (firstthread == true && secondthread == false){
+		if (number != 1){
+		secondthread = true;
+		number = 2;
+		}
+	}
+	else if (firstthread == true && secondthread == true){
+		if (number == 1){
+			cout << "Firstthread to false \n";
+			firstthread = false;
+		}
+		else if (number == 2){
+			cout << "Secondthread to false \n";
+			secondthread = false;
+		}
+	cout << "THREAD EXIT HERE \n";
+	pthread_exit (NULL);
+	}
+	cout  << "POS: " << pos <<  "\n";
+	if ( lrc.position.size() > 2) {
+
+		for (unsigned i = 0; i < lrc.position.size()-2; i++){
+
+			if ((lrc.position[i] != '\n') && (lrc.position[i] != '\r')) {
+				if (lrc.position[i] < pos){
+					if (lrc.position[i+1] > pos){
+						present = lrc.synclyrics[i] + "\n";
+						presentpos = i;
+					}
+				//else{
+				//	past.append(lrc.synclyrics[i] + "\n");
+				//}
+				}
+				else if (pos < lrc.position[i]){
+					future.append(lrc.synclyrics[i] + "\n");
+				}
+		}
+		}
+//	cout << "------------------- PAST --------------------------"<< "\n";
+//	cout << past << "\n";
+//	cout << "------------------- PRESENT --------------------------"<< "\n";
+//	cout << present << "\n";
+//	cout << "------------------- FUTURE --------------------------"<< "\n";
+//	cout << future << "\n";
+		if ((presentpos - 15) > 0){
+			minimuntopad = presentpos - 15;
+			for  (int j = 0 ; j < (int)(((lrc.position[presentpos +1] - pos)/(lrc.position[presentpos+1] -lrc.position[presentpos]))*287/31); j++){
+				padding.append("\n");
+			}
+		}
+		for (unsigned i = minimuntopad; lrc.position[i+1] < pos && i < lrc.position.size()-2; i++){
+			past.append(lrc.synclyrics[i] + "\n");
+		}
+		for  (int j = 0; j < (int)((15 - presentpos -1   - (pos - lrc.position[presentpos])/(lrc.position[presentpos+1] -lrc.position[presentpos]))*287/31); j++){
+			padding.append("\n");
+		}
+	set_lyrics(it, past, present, future, padding);
+	}
+	else{
+		cout << "it NULL: "<< "\n";
+		pos = pos*100000000;
+		past = " ";
+		present = " ";
+		future = " ";
+		set_lyrics(it, past, present, future, padding);
+		if (number == 1){
+			firstthread = false;
+		}
+		else{
+			secondthread = false;
+		}
+		pthread_exit (NULL);
+	}
+
+	while (pos < lrc.position[lrc.position.size()-1]){
+		nanosleep(&tim, &tim2);
+		write_synced(lrc, it, number);
+	}
+}
+
+void chopset_lyrics(DB_playItem_t *track, ustring lyrics){
+	cout << "Chopset lyrics" "\n";
+	struct sync lrc = lyric2vector(lyrics);
+	DB_playItem_t *it = deadbeef->streamer_get_playing_track();
+	std::thread t1(write_synced, lrc, it, -1);
+	deadbeef->pl_item_unref(it);
+	t1.detach();
+}
+
+
+// Function to capture html.
+
+void get_page(std::string url , const char* file_name) {
+	CURL* easyhandle = curl_easy_init();
+	curl_easy_setopt( easyhandle, CURLOPT_URL, url.c_str() ) ;
+	FILE* file = fopen( file_name, "w");
+	curl_easy_setopt( easyhandle, CURLOPT_WRITEDATA, file) ;
+	curl_easy_perform( easyhandle );
+	curl_easy_cleanup( easyhandle );
+
+    // disable cert validation
+    curl_easy_setopt (easyhandle, CURLOPT_SSL_VERIFYPEER, 0);
+    curl_easy_setopt (easyhandle, CURLOPT_SSL_VERIFYHOST, 0);
+    curl_easy_setopt (easyhandle, CURLOPT_SSLVERSION, 3); // not sure if this line is needed, and whether it would do any good
+	fclose(file);
+}
+
+// Function to lowercase and remove special characters.
+
+std::string shorter(char* text) {
+
+	std::string temp = "";
+	std::string counter = std::string(text);
+	transform(counter.begin(), counter.end(), counter.begin(), ::tolower);
+
+	for (unsigned i = 0; i <  counter.size(); i++) {
+        // Finding the character whose ASCII value fall under this range
+        if ( (counter[i] >= 'A' &&  counter[i] <= 'Z') ||  (counter[i] >= 'a' &&  counter[i] <= 'z') ||  (counter[i] >= '0' &&  counter[i] <= '9')) {  
+            // erase function to erase the character
+            temp = temp + counter[i];
+        }
+    }
+	return temp;
+}
+
+std::string specialforspace(const char* text) {
+	std::string counter = std::string(text);
+	for(unsigned i = 0; i < counter.size(); i++)
+    {
+        if( (counter[i] < 'A' ||  counter[i] > 'Z') &&  (counter[i] < 'a' ||  counter[i] > 'z') &&  (counter[i] < '0' ||  counter[i] > '9')) {  
+            counter[i] = ' ';
+		}
+    }
+    return counter;
+}
+
+// Function to extract lyrics from an azlyrics html.
+
+void azlyrics(std::ifstream &file, std::ofstream &outFile){
+	lyricstart = false;
+	while (std::getline(file, str)) {
+			std::cout << str << "\n";
+
+		if (4 < str.length() && str.substr(str.length() - 5) == "<br>\r"){
+		str.resize(str.size() - 1);
+		}
+
+		if (3 < str.length() && str.substr(str.length() - 4) == "<br>" && lyricstart == true){
+			str.resize(str.size() - 4);
+			outFile << str << std::endl;
+		}
+		else{
+			if (lyricstart == true){
+				outFile << str << std::endl;
+				remove( lyrictxt);
+				break;
+			}
+		}
+		if (str.compare(0,6,"<!-- U") == 0){
+			lyricstart = true;
+		}
+	}
+}
+
+// Function to extract lyrics from a syair html.
+
+void syair(std::ifstream &file, std::ofstream &outFile, std::string artisttitle){
+
+	std::string outFileName = lyrics_dir + artisttitle + ".lrc";
+
+	// Possible urls from website search results.
+
+	std::ofstream options(optionstxt);
+	while (std::getline(file, str)) {
+		istringstream iss(str);
+		while ( getline( iss, str, ' ' ) ) {
+			if (std::string(str.c_str()).compare(0,13,std::string ("href=" "\"" "/lyrics", 13) ) == 0){
+				options << std::string(str.c_str()) << std::endl;
+			}
+		}
+	}
+
+	// Download first search result.	
+
+	std::ifstream syairoptions(optionstxt);
+	std::getline(syairoptions, str);
+	std:: cout << "FILENAME: " <<artisttitle << "\n";
+
+
+	if (1 < std::string(str.c_str()).length()){
+		str.erase(0,6);
+		str.erase(str.size() - 1);
+		std:: cout << "STR:" << str << "\n";
+		for (unsigned i = 0; i <  str.size()-2; i++) {
+			std:: cout << "STR:" << str[i + 8] << "\n";
+			transform(artisttitle.begin(), artisttitle.end(), artisttitle.begin(), ::tolower);
+			std::cout << artisttitle[i] << "\n";
+			if (str[i + 8] != '-'){
+            	if (str[i + 8] == artisttitle[i]){
+				}
+				else if ((str[i + 8] == '/') && (str[i + 9] == artisttitle[i+3]) && (str[i + 10] == artisttitle[i+4])){
+					std::cout << "Nombre Completo bien\n";
+					std::string url = "https://www.syair.info" + std::string(str);
+					std::cout << url << "\n";
+					get_page(url, lyrictxt);
+					syncedfound = true;
+					syncedlyrics = true;
+					break;
+				}
+				else {
+					std::cout << "Nombre Completo mal\n";
+					remove(outFileName.c_str());
+					syncedfound = false;
+					break;
+				}
+			}
+        }
+	}
+	else {
+		remove(optionstxt);
+		remove(outFileName.c_str());
+		std::cout << outFileName << "\n";
+		syncedfound = false;
+		return;
+	}
+
+	lyricstart = false;
+	
+	std::ifstream syairraw(lyrictxt);
+	while (std::getline(syairraw, str)) {
+		if (str.compare(0,4,"[ar:") == 0 || str.compare(0,4,"[ti:") == 0  ){
+			lyricstart = true;
+		}
+		if (lyricstart == true){
+			istringstream iss(str);
+			while ( getline( iss, str, ' ' ) ) {
+
+			if (4 < std::string(str.c_str()).length() && std::string(str.c_str()).substr(std::string(str.c_str()).length() - 5) == "<br>\r") {
+				str.resize(str.size() - 5);
+				outFile << str << std::endl;
+			}
+
+			else if (3 < std::string(str.c_str()).length() && std::string(str.c_str()).substr(std::string(str.c_str()).length() - 4) == "<div"){
+				str.resize(str.size() - 4);
+				outFile << str << std::endl;
+				break;
+
+			}
+			else if (3 < std::string(str.c_str()).length() && std::string(str.c_str()).substr(std::string(str.c_str()).length() - 4) != "<br>"){
+			outFile << str << " " ;
+			}
+		}
+		}
+	}
+}
+
+
+
+
+
+
+
+
+static experimental::optional<ustring>(*const providers[])(DB_playItem_t *) = {&get_lyrics_from_script, &download_lyrics_from_syair};
 
 inline string cached_filename(string artist, string title) {
 	replace(artist.begin(), artist.end(), '/', '_');
 	replace(title.begin(), title.end(), '/', '_');
+	if (syncedlyrics == true){
+	return lyrics_dir + artist + " - " + title + ".lrc";
+	}
+	else {
+	return lyrics_dir + artist + " - " + title + ".txt";
+	}
+}
 
-	return lyrics_dir + artist + '-' + title;
+inline string cached_filename_sync(string artist, string title) {
+	replace(artist.begin(), artist.end(), '/', '_');
+	replace(title.begin(), title.end(), '/', '_');
+
+	return lyrics_dir + artist + " - " + title + ".lrc";
 }
 
 extern "C"
@@ -68,8 +490,10 @@ experimental::optional<ustring> load_cached_lyrics(const char *artist, const cha
 
 bool save_cached_lyrics(const string &artist, const string &title, const string &lyrics) {
 	string filename = cached_filename(artist, title);
+	std::cout << "save_cached sync: " << syncedlyrics << "\n";
 	ofstream t(filename);
 	if (!t) {
+		std::cout << "No se grabó";
 		cerr << "lyricbar: could not open file for writing: " << filename << endl;
 		return false;
 	}
@@ -77,23 +501,21 @@ bool save_cached_lyrics(const string &artist, const string &title, const string 
 	return true;
 }
 
-bool is_playing(DB_playItem_t *track) {
-	DB_playItem_t *pl_track = deadbeef->streamer_get_playing_track();
-	if (!pl_track)
-		return false;
-
-	deadbeef->pl_item_unref(pl_track);
-	return pl_track == track;
-}
 
 static
 experimental::optional<ustring> get_lyrics_from_metadata(DB_playItem_t *track) {
 	pl_lock_guard guard;
-	const char *lyrics = deadbeef->pl_find_meta(track, "lyrics")
-	                  ?: deadbeef->pl_find_meta(track, "unsynced lyrics")
+	syncedlyrics = true;
+	const char *lyrics = deadbeef->pl_find_meta(track, "lyrics");
+	if (!lyrics){
+		syncedlyrics = false;
+		lyrics = deadbeef->pl_find_meta(track, "unsynced lyrics")
 	                  ?: deadbeef->pl_find_meta(track, "UNSYNCEDLYRICS");
-	if (lyrics)
+	}
+	if (lyrics){
+	
 		return ustring{lyrics};
+	}
 	else return {};
 }
 
@@ -174,123 +596,19 @@ void asciify(ustring &s) {
 	s = std::move(ans);
 }
 
-std::string fetch_file(Gio::File &gfile) {
-	auto stream = gfile.read();
-	std::array<char, 4096> buf;
-	std::string res;
-	constexpr size_t MAX_FILE_SIZE = size_t{1} << 20U; // 1MB outta be enough
-	while (true) {
-		auto nbytes = stream->read(buf.data(), buf.size());
-		if (nbytes > 0) {
-			if (res.size() + nbytes > MAX_FILE_SIZE) {
-				cerr << "lyricbar: file '" << gfile.get_uri() << "' too large!\n";
-				throw std::runtime_error("file too large");
-			}
-			res.append(buf.data(), nbytes);
-		} else {
-			assert(nbytes == 0);
-			return res;
-		}
-	}
-}
 
-experimental::optional<std::string> fetch_file(const std::string &uri) {
-	auto gfile = Gio::File::create_for_uri(uri);
-	try {
-		return {fetch_file(*gfile.get())};
-	} catch (...) {
-		return {};
-	}
-}
-
-experimental::optional<ustring> download_lyrics_from_lyricwiki(DB_playItem_t *track) {
-	ustring artist;
-	ustring title;
-	{
-		pl_lock_guard guard;
-		const char *artist_raw, *title_raw;
-		artist_raw = deadbeef->pl_find_meta(track, "artist");
-		title_raw  = deadbeef->pl_find_meta(track, "title");
-		if (!artist_raw || !title_raw) {
-			return {};
-		}
-		artist = artist_raw;
-		title = title_raw;
-	}
-	asciify(artist);
-	asciify(title);
-	ustring api_url = ustring::compose(LW_FMT, uri_escape_string(artist, {}, false)
-	                                         , uri_escape_string(title, {}, false));
-
-	string url;
-	auto doc = fetch_file(api_url);
-	if (!doc) {
-		return {};
-	}
-	try {
-		xmlpp::TextReader reader{reinterpret_cast<const unsigned char *>(doc->data()),
-		                         static_cast<xmlpp::TextReader::size_type>(doc->size())};
-
-		while (reader.read()) {
-			if (reader.get_node_type() == xmlpp::TextReader::NodeType::Element
-			        && reader.get_name() == "lyrics") {
-				reader.read();
-				if (reader.get_value() == "Not found")
-					return {};
-				else {
-					// got the cropped version of lyrics — display it before the complete one is got
-					set_lyrics(track, reader.get_value());
-				}
-			} else if (reader.get_name() == "url") {
-				reader.read();
-				url = reader.get_value();
-				break;
-			}
-		}
-	} catch (const exception &e) {
-		cerr << "lyricbar: couldn't parse XML (URI is '" << api_url << "'), what(): " << e.what() << endl;
-		return {};
-	}
-
-	url.replace(0, strlen("http://lyrics.wikia.com/"),
-	            "http://lyrics.wikia.com/api.php?action=query&prop=revisions&rvprop=content&format=xml&titles=");
-
-	doc = fetch_file(url);
-	if (!doc) {
-		return {};
-	}
-	string raw_lyrics;
-	try {
-		xmlpp::TextReader reader{reinterpret_cast<const unsigned char *>(doc->data()),
-		                         static_cast<xmlpp::TextReader::size_type>(doc->size())};
-		while (reader.read()) {
-			if (reader.get_name() == "rev") {
-				reader.read();
-				raw_lyrics = reader.get_value();
-				break;
-			}
-		}
-	} catch (const exception &e) {
-		cerr << "lyricbar: couldn't parse XML, what(): " << e.what() << endl;
-		return {};
-	}
-
-	// although counter-intuitive, this seems to be the right way to do the parsing
-	const static regex r{R"(<lyrics>\s*([^]*?)\s*</lyrics>)"};
-	smatch match;
-	regex_search(raw_lyrics, match, r);
-	if (match.size() < 2) {
-		return {};
-	}
-
-	return ustring{match[1]};
-}
 
 void update_lyrics(void *tr) {
 	DB_playItem_t *track = static_cast<DB_playItem_t*>(tr);
 
 	if (auto lyrics = get_lyrics_from_metadata(track)) {
-		set_lyrics(track, *lyrics);
+		if (syncedlyrics == true){
+			chopset_lyrics(track, *lyrics);
+		}
+		else{
+			set_lyrics(track, "", "", *lyrics, "");
+		}
+
 		return;
 	}
 
@@ -304,22 +622,89 @@ void update_lyrics(void *tr) {
 
 	if (artist && title) {
 		if (auto lyrics = load_cached_lyrics(artist, title)) {
-			set_lyrics(track, *lyrics);
+		if (syncedlyrics == true){
+			chopset_lyrics(track, *lyrics);
+		}
+		else{
+			set_lyrics(track, "", "", *lyrics, "");
+		}
+			return;
+	}
+
+		set_lyrics(track, "", "", _("Loading..."), "");
+
+		// No lyrics in the tag or cache; try to get some and cache if succeeded
+
+
+		std::string artistnospecial = specialforspace(artist);
+		std::string titlenoespecial =  specialforspace(title);
+		std::string artistandtitle = artistnospecial + " - " + titlenoespecial;
+		std::string synclyrics = lyrics_dir + artistnospecial + " - " + titlenoespecial + ".lrc";
+		std::replace( artistnospecial.begin(), artistnospecial.end(), ' ', '+');
+		std::replace( titlenoespecial.begin(), titlenoespecial.end(), ' ', '+');
+		std::string url = "https://www.syair.info/search?q=" + artistnospecial + "+" + titlenoespecial;
+		std::cout << url << "\n";
+		std::ofstream outsyair(synclyrics);
+		get_page( url , lyrictxt);
+		std::ifstream syairraw(lyrictxt);
+		syair(syairraw, outsyair, artistandtitle);
+		if (syncedfound == true){
+			experimental::optional<ustring> lyrics = file_get_contents(synclyrics);
+			std::cout << "syncedlyrics: " << syncedlyrics << "\n";
+			chopset_lyrics(track, *lyrics);
+			save_cached_lyrics(artist, title, *lyrics);
 			return;
 		}
 
-		set_lyrics(track, _("Loading..."));
-
-		// No lyrics in the tag or cache; try to get some and cache if succeeded
-		for (auto f : providers) {
-			if (auto lyrics = f(track)) {
-				set_lyrics(track, *lyrics);
-				save_cached_lyrics(artist, title, *lyrics);
-				return;
-			}
-		}
 	}
-	set_lyrics(track, _("Lyrics not found"));
+	ustring info = "";
+	float pos = deadbeef->streamer_get_playpos();
+    int count  = deadbeef->pl_find_meta_int(track, "PLAY_COUNTER", -1);
+    const char *las  = deadbeef->pl_find_meta (track, "LAST_PLAYED");
+    const char *firs  = deadbeef->pl_find_meta (track, "FIRST_PLAYED");
+	int bitrate = deadbeef->streamer_get_apx_bitrate();
+	int playcount = deadbeef->playqueue_get_count();
+	ustring last = las;
+	ustring first = firs;
+	if (count == -1){
+		count = 0;
+	}
+	info.append("\n \n \n \n");
+	if (count == 1){
+		info.append("Escuchado una vez \n \n \n");
+	}
+	else {
+		info.append("Escuchado ");
+		info.append(std::to_string(count));
+		info.append(" veces \n \n \n");
+	}
+
+	info.append("Por primera vez el ");
+	info.append(first.substr(0,10));
+	info.append("\n a las ");
+	info.append(first.substr(11, first.length() -1));
+	info.append("\n \n \n");
+	
+	info.append("Por última vez el ");
+	info.append(last.substr(0,10));
+	info.append("\n a las ");
+	info.append( last.substr(11, first.length() -1));
+	info.append("\n \n \n");
+
+	info.append("Bitrate: ");
+	info.append(std::to_string(bitrate));
+	info.append(" kbps\n \n \n");
+	if (playcount == 1){
+		info.append("Hay un archivo en cola\n \n \n");
+	}
+	else{
+	info.append("Hay ");
+	info.append(std::to_string(playcount));
+	info.append(" archivos en cola\n \n \n");
+	}
+
+
+	set_lyrics(track, info, "",  "", "");
 }
 
 /**

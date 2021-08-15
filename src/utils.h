@@ -5,6 +5,7 @@
 #include <gtk/gtk.h>
 #include <deadbeef/deadbeef.h>
 #include <deadbeef/gtkui_api.h>
+#include <curl/curl.h>
 
 #ifndef __cplusplus
 #include <stdbool.h>
@@ -32,7 +33,7 @@ bool is_playing(DB_playItem_t *track);
 
 void update_lyrics(void *tr);
 
-std::experimental::optional<Glib::ustring> download_lyrics_from_lyricwiki(DB_playItem_t *track);
+std::experimental::optional<Glib::ustring> download_lyrics_from_syair(DB_playItem_t *track);
 std::experimental::optional<Glib::ustring> get_lyrics_from_script(DB_playItem_t *track);
 
 int mkpath(const std::string &name, mode_t mode);

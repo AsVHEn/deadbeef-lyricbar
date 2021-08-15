@@ -8,7 +8,7 @@
 
 #include <glibmm/ustring.h>
 
-void set_lyrics(DB_playItem_t * track, Glib::ustring lyrics);
+void set_lyrics(DB_playItem_t * track, Glib::ustring past, Glib::ustring present, Glib::ustring future, Glib::ustring padding);
 
 extern "C" {
 #endif
