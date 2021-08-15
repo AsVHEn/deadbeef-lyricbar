@@ -1,5 +1,5 @@
 Based on loskutov lyricbar:
-[![Build Status](https://travis-ci.org/loskutov/deadbeef-lyricbar.svg)](https://travis-ci.org/AsVHEn/deadbeef-lyricbar)
+[![Build Status](https://travis-ci.org/loskutov/deadbeef-lyricbar.svg)](https://travis-ci.org/deadbeef-lyricbar)
 
 Totally WIP status!!!!!
 
