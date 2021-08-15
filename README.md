@@ -1,5 +1,4 @@
 Based on loskutov https://github.com/loskutov/deadbeef-lyricbar
-[![Build Status](https://travis-ci.org/loskutov/deadbeef-lyricbar.svg)](https://travis-ci.org/deadbeef-lyricbar)
 
 Totally WIP status!!!!!
 
