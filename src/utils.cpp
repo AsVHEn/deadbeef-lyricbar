@@ -33,10 +33,10 @@ static const char *home_cache = getenv("XDG_CACHE_HOME");
 static const std::string lyrics_dir = (home_cache ? string(home_cache) : string(getenv("HOME")) + "/.cache")
                                + "/deadbeef/lyrics/";
 
-		std::string txt = lyrics_dir + "lyric.txt";
-		const char *lyrictxt = txt.c_str();
-		std::string otxt = lyrics_dir + "options.txt";
-		const char *optionstxt = otxt.c_str();
+std::string txt = lyrics_dir + "lyric.txt";
+const char *lyrictxt = txt.c_str();
+std::string otxt = lyrics_dir + "options.txt";
+const char *optionstxt = otxt.c_str();
 
 
 
@@ -53,6 +53,8 @@ struct sync
 	vector<ustring> synclyrics;
 	vector<double> position;
 };
+
+struct sync lrc;
 
 struct chopped
 {
@@ -106,7 +108,7 @@ struct sync bubbleSort(vector<double> arr, vector<ustring> text ,  int n)
 				}
 			}
 		}
-	cout << "Bubbleshort resultado \n";
+	cout << "Bubbleshort done \n";
 	struct sync retur = {text,arr};
 	return retur;
 	}
@@ -145,17 +147,16 @@ struct sync lyric2vector( ustring lyrics){
 
 	int n = position.size();
 	struct sync  goodlyrics = bubbleSort(position, synclyrics, n);
-	for (auto k = goodlyrics.position.begin(); k != goodlyrics.position.end(); ++k)
-    	std::cout << *k << " ";
+//	for (auto k = goodlyrics.position.begin(); k != goodlyrics.position.end(); ++k)
+//    	std::cout << *k << " ";
 
-	for (auto i = goodlyrics.synclyrics.begin(); i != goodlyrics.synclyrics.end(); ++i)
-    	std::cout << *i << '\n';
-	cout << "Bubbleshort done \n";
+//	for (auto i = goodlyrics.synclyrics.begin(); i != goodlyrics.synclyrics.end(); ++i)
+//    	std::cout << *i << '\n';
 	
 	return goodlyrics;
 }
 
-void write_synced( struct sync lrc, DB_playItem_t *it, int number){
+void write_synced( DB_playItem_t *it){
 	float pos = deadbeef->streamer_get_playpos();
 	ustring past = "";
 	ustring present = "";
@@ -164,9 +165,61 @@ void write_synced( struct sync lrc, DB_playItem_t *it, int number){
 	int presentpos = 0;
 	int minimuntopad = 0;
 
+	if ( lrc.position.size() > 2) {
+
+		for (unsigned i = 0; i < lrc.position.size()-2; i++){
+			if (lrc.position[i] < pos){
+				if (lrc.position[i+1] > pos){
+					present = lrc.synclyrics[i] + "\n";
+					presentpos = i;
+				}
+			//else{
+			//	past.append(lrc.synclyrics[i] + "\n");
+			//}
+				}
+			else if (pos < lrc.position[i]){
+					future.append(lrc.synclyrics[i] + "\n");
+			}
+		}
+//	cout << "------------------- PAST --------------------------"<< "\n";
+//	cout << past << "\n";
+//	cout << "------------------- PRESENT --------------------------"<< "\n";
+//	cout << present << "\n";
+//	cout << "------------------- FUTURE --------------------------"<< "\n";
+//	cout << future << "\n";
+		if ((presentpos - 15) > 0){
+			minimuntopad = presentpos - 15;
+			for  (int j = 0 ; j < (int)(((lrc.position[presentpos +1] - pos)/(lrc.position[presentpos+1] -lrc.position[presentpos]))*574/31); j++){
+				padding.append("\n");
+			}
+		}
+		for (unsigned i = minimuntopad; lrc.position[i+1] < pos && i < lrc.position.size()-2; i++){
+			past.append(lrc.synclyrics[i] + "\n");
+		}
+		for  (int j = 0; j < (int)((15 - presentpos -1   - (pos - lrc.position[presentpos])/(lrc.position[presentpos+1] -lrc.position[presentpos]))*574/31 - 62); j++){
+			padding.append("\n");
+		}
+	set_lyrics(it, past, present, future, padding);
+	}
+
+	else{
+		past = " ";
+		present = " ";
+		future = " ";
+		set_lyrics(it, past, present, future, padding);
+	}
+}
+
+void thread_listener(DB_playItem_t *track, int number ){
+
+	float pos = deadbeef->streamer_get_playpos();
+	float length = deadbeef->pl_get_item_duration(track);
+
+	//cout << "Posición: " << pos << "\n";
+
 	struct timespec tim, tim2;
-		   tim.tv_sec = 0;
-		   tim.tv_nsec = 50000000;
+		tim.tv_sec = 0;
+		tim.tv_nsec = 50000000;
 
 	if (firstthread == false && secondthread == false){
 		firstthread = true;
@@ -186,63 +239,19 @@ void write_synced( struct sync lrc, DB_playItem_t *it, int number){
 	}
 	else if (firstthread == true && secondthread == true){
 		if (number == 1){
-			cout << "Firstthread to false \n";
 			firstthread = false;
 		}
 		else if (number == 2){
-			cout << "Secondthread to false \n";
 			secondthread = false;
 		}
-	cout << "THREAD EXIT HERE \n";
 	pthread_exit (NULL);
 	}
-	cout  << "POS: " << pos <<  "\n";
-	if ( lrc.position.size() > 2) {
-
-		for (unsigned i = 0; i < lrc.position.size()-2; i++){
-
-			if ((lrc.position[i] != '\n') && (lrc.position[i] != '\r')) {
-				if (lrc.position[i] < pos){
-					if (lrc.position[i+1] > pos){
-						present = lrc.synclyrics[i] + "\n";
-						presentpos = i;
-					}
-				//else{
-				//	past.append(lrc.synclyrics[i] + "\n");
-				//}
-				}
-				else if (pos < lrc.position[i]){
-					future.append(lrc.synclyrics[i] + "\n");
-				}
-		}
-		}
-//	cout << "------------------- PAST --------------------------"<< "\n";
-//	cout << past << "\n";
-//	cout << "------------------- PRESENT --------------------------"<< "\n";
-//	cout << present << "\n";
-//	cout << "------------------- FUTURE --------------------------"<< "\n";
-//	cout << future << "\n";
-		if ((presentpos - 15) > 0){
-			minimuntopad = presentpos - 15;
-			for  (int j = 0 ; j < (int)(((lrc.position[presentpos +1] - pos)/(lrc.position[presentpos+1] -lrc.position[presentpos]))*287/31); j++){
-				padding.append("\n");
-			}
-		}
-		for (unsigned i = minimuntopad; lrc.position[i+1] < pos && i < lrc.position.size()-2; i++){
-			past.append(lrc.synclyrics[i] + "\n");
-		}
-		for  (int j = 0; j < (int)((15 - presentpos -1   - (pos - lrc.position[presentpos])/(lrc.position[presentpos+1] -lrc.position[presentpos]))*287/31); j++){
-			padding.append("\n");
-		}
-	set_lyrics(it, past, present, future, padding);
+	if (pos < length - 0.1){
+		nanosleep(&tim, &tim2);
+		write_synced(track);
+		thread_listener(track, number);
 	}
 	else{
-		cout << "it NULL: "<< "\n";
-		pos = pos*100000000;
-		past = " ";
-		present = " ";
-		future = " ";
-		set_lyrics(it, past, present, future, padding);
 		if (number == 1){
 			firstthread = false;
 		}
@@ -250,19 +259,21 @@ void write_synced( struct sync lrc, DB_playItem_t *it, int number){
 			secondthread = false;
 		}
 		pthread_exit (NULL);
+
 	}
 
-	while (pos < lrc.position[lrc.position.size()-1]){
-		nanosleep(&tim, &tim2);
-		write_synced(lrc, it, number);
-	}
+
 }
-
 void chopset_lyrics(DB_playItem_t *track, ustring lyrics){
 	cout << "Chopset lyrics" "\n";
-	struct sync lrc = lyric2vector(lyrics);
+	lrc = lyric2vector(lyrics);
 	DB_playItem_t *it = deadbeef->streamer_get_playing_track();
-	std::thread t1(write_synced, lrc, it, -1);
+	float length = deadbeef->pl_get_item_duration( it );
+	lrc.position.push_back((float)length -0.2);
+	lrc.position.push_back((float)length);
+	lrc.synclyrics.push_back("\n");
+	lrc.synclyrics.push_back("\n");
+	std::thread t1(thread_listener, it, -1);
 	deadbeef->pl_item_unref(it);
 	t1.detach();
 }
@@ -319,7 +330,6 @@ std::string specialforspace(const char* text) {
 void azlyrics(std::ifstream &file, std::ofstream &outFile){
 	lyricstart = false;
 	while (std::getline(file, str)) {
-			std::cout << str << "\n";
 
 		if (4 < str.length() && str.substr(str.length() - 5) == "<br>\r"){
 		str.resize(str.size() - 1);
@@ -454,13 +464,6 @@ inline string cached_filename(string artist, string title) {
 	}
 }
 
-inline string cached_filename_sync(string artist, string title) {
-	replace(artist.begin(), artist.end(), '/', '_');
-	replace(title.begin(), title.end(), '/', '_');
-
-	return lyrics_dir + artist + " - " + title + ".lrc";
-}
-
 extern "C"
 bool is_cached(const char *artist, const char *title) {
 	return artist && title && access(cached_filename(artist, title).c_str(), 0) == 0;
@@ -513,7 +516,6 @@ experimental::optional<ustring> get_lyrics_from_metadata(DB_playItem_t *track) {
 	                  ?: deadbeef->pl_find_meta(track, "UNSYNCEDLYRICS");
 	}
 	if (lyrics){
-	
 		return ustring{lyrics};
 	}
 	else return {};
@@ -658,7 +660,6 @@ void update_lyrics(void *tr) {
 
 	}
 	ustring info = "";
-	float pos = deadbeef->streamer_get_playpos();
     int count  = deadbeef->pl_find_meta_int(track, "PLAY_COUNTER", -1);
     const char *las  = deadbeef->pl_find_meta (track, "LAST_PLAYED");
     const char *firs  = deadbeef->pl_find_meta (track, "FIRST_PLAYED");
