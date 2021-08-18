@@ -15,14 +15,13 @@
 
 #include "debug.h"
 #include "gettext.h"
-#include "utils.h"
 #include <deadbeef/deadbeef.h>
 
 using namespace std;
 using namespace Gtk;
 using namespace Glib;
 
-
+int width;
 
 
 // TODO: eliminate all the global objects, as their initialization is not well defined
@@ -45,6 +44,10 @@ void set_lyrics(DB_playItem_t *track, ustring past, ustring present, ustring fut
 			artist = deadbeef->pl_find_meta(track, "artist") ?: _("Unknown Artist");
 			title  = deadbeef->pl_find_meta(track, "title") ?: _("Unknown Title");
 		}
+
+		width = lyricbar->get_allocation().get_width();
+		//cout << "Rectangulo: "<< width << "\n";
+
 		refBuffer->erase(refBuffer->begin(), refBuffer->end());
 		refBuffer->insert_with_tags(refBuffer->begin(), title, tagsTitle);
 		refBuffer->insert_with_tags(refBuffer->end(), ustring{"\n"} + artist + "\n\n", tagsArtist);

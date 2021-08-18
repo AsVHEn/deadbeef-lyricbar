@@ -48,6 +48,7 @@ bool firstthread = false;
 bool secondthread = false;
 std::string str;
 
+
 struct sync
 {
 	vector<ustring> synclyrics;
@@ -108,19 +109,18 @@ struct sync bubbleSort(vector<double> arr, vector<ustring> text ,  int n)
 				}
 			}
 		}
-	cout << "Bubbleshort done \n";
+	//cout << "Bubbleshort done \n";
 	struct sync retur = {text,arr};
 	return retur;
 	}
 }
 
 struct sync lyric2vector( ustring lyrics){
-	cout << "lyric2vector" "\n";
+	//cout << "lyric2vector" "\n";
 	vector<ustring> synclyrics;
 	vector<double> position;
 	ustring line;
 	int squarebracket;
-	ustring star("[0");
 	int repeats = 0;
 		
 	for (unsigned i=0; i < lyrics.length() - 3; ++i){
@@ -164,6 +164,8 @@ void write_synced( DB_playItem_t *it){
 	ustring padding = "";
 	int presentpos = 0;
 	int minimuntopad = 0;
+	
+	//cout << width << "\n";
 
 	if ( lrc.position.size() > 2) {
 
@@ -187,15 +189,20 @@ void write_synced( DB_playItem_t *it){
 //	cout << present << "\n";
 //	cout << "------------------- FUTURE --------------------------"<< "\n";
 //	cout << future << "\n";
+
+		//Add padding variable at beginning of lyrics to show to make scroll when removing a past line.
 		if ((presentpos - 15) > 0){
 			minimuntopad = presentpos - 15;
 			for  (int j = 0 ; j < (int)(((lrc.position[presentpos +1] - pos)/(lrc.position[presentpos+1] -lrc.position[presentpos]))*574/31); j++){
 				padding.append("\n");
 			}
 		}
+
+		//Add past lyrics removing lines to make scroll.
 		for (unsigned i = minimuntopad; lrc.position[i+1] < pos && i < lrc.position.size()-2; i++){
 			past.append(lrc.synclyrics[i] + "\n");
 		}
+		//Add padding variable at beginning of lyrics to show to make scroll with first lines.
 		for  (int j = 0; j < (int)((15 - presentpos -1   - (pos - lrc.position[presentpos])/(lrc.position[presentpos+1] -lrc.position[presentpos]))*574/31 - 62); j++){
 			padding.append("\n");
 		}
@@ -265,7 +272,7 @@ void thread_listener(DB_playItem_t *track, int number ){
 
 }
 void chopset_lyrics(DB_playItem_t *track, ustring lyrics){
-	cout << "Chopset lyrics" "\n";
+	//cout << "Chopset lyrics" "\n";
 	lrc = lyric2vector(lyrics);
 	DB_playItem_t *it = deadbeef->streamer_get_playing_track();
 	float length = deadbeef->pl_get_item_duration( it );
@@ -374,31 +381,24 @@ void syair(std::ifstream &file, std::ofstream &outFile, std::string artisttitle)
 
 	std::ifstream syairoptions(optionstxt);
 	std::getline(syairoptions, str);
-	std:: cout << "FILENAME: " <<artisttitle << "\n";
 
 
 	if (1 < std::string(str.c_str()).length()){
 		str.erase(0,6);
 		str.erase(str.size() - 1);
-		std:: cout << "STR:" << str << "\n";
 		for (unsigned i = 0; i <  str.size()-2; i++) {
-			std:: cout << "STR:" << str[i + 8] << "\n";
 			transform(artisttitle.begin(), artisttitle.end(), artisttitle.begin(), ::tolower);
-			std::cout << artisttitle[i] << "\n";
 			if (str[i + 8] != '-'){
             	if (str[i + 8] == artisttitle[i]){
 				}
 				else if ((str[i + 8] == '/') && (str[i + 9] == artisttitle[i+3]) && (str[i + 10] == artisttitle[i+4])){
-					std::cout << "Nombre Completo bien\n";
 					std::string url = "https://www.syair.info" + std::string(str);
-					std::cout << url << "\n";
 					get_page(url, lyrictxt);
 					syncedfound = true;
 					syncedlyrics = true;
 					break;
 				}
 				else {
-					std::cout << "Nombre Completo mal\n";
 					remove(outFileName.c_str());
 					syncedfound = false;
 					break;
@@ -409,7 +409,6 @@ void syair(std::ifstream &file, std::ofstream &outFile, std::string artisttitle)
 	else {
 		remove(optionstxt);
 		remove(outFileName.c_str());
-		std::cout << outFileName << "\n";
 		syncedfound = false;
 		return;
 	}
@@ -437,7 +436,10 @@ void syair(std::ifstream &file, std::ofstream &outFile, std::string artisttitle)
 
 			}
 			else if (3 < std::string(str.c_str()).length() && std::string(str.c_str()).substr(std::string(str.c_str()).length() - 4) != "<br>"){
-			outFile << str << " " ;
+				outFile << str << " " ;
+			}
+			else if (3 >= std::string(str.c_str()).length()){
+				outFile << str << " ";
 			}
 		}
 		}
@@ -493,10 +495,9 @@ experimental::optional<ustring> load_cached_lyrics(const char *artist, const cha
 
 bool save_cached_lyrics(const string &artist, const string &title, const string &lyrics) {
 	string filename = cached_filename(artist, title);
-	std::cout << "save_cached sync: " << syncedlyrics << "\n";
+	//std::cout << "save_cached sync: " << syncedlyrics << "\n";
 	ofstream t(filename);
 	if (!t) {
-		std::cout << "No se grabó";
 		cerr << "lyricbar: could not open file for writing: " << filename << endl;
 		return false;
 	}
@@ -645,14 +646,12 @@ void update_lyrics(void *tr) {
 		std::replace( artistnospecial.begin(), artistnospecial.end(), ' ', '+');
 		std::replace( titlenoespecial.begin(), titlenoespecial.end(), ' ', '+');
 		std::string url = "https://www.syair.info/search?q=" + artistnospecial + "+" + titlenoespecial;
-		std::cout << url << "\n";
 		std::ofstream outsyair(synclyrics);
 		get_page( url , lyrictxt);
 		std::ifstream syairraw(lyrictxt);
 		syair(syairraw, outsyair, artistandtitle);
 		if (syncedfound == true){
 			experimental::optional<ustring> lyrics = file_get_contents(synclyrics);
-			std::cout << "syncedlyrics: " << syncedlyrics << "\n";
 			chopset_lyrics(track, *lyrics);
 			save_cached_lyrics(artist, title, *lyrics);
 			return;

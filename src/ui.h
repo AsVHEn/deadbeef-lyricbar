@@ -4,11 +4,15 @@
 #include <gtk/gtk.h>
 #include <deadbeef/deadbeef.h>
 
+#include "utils.h"
+
 #ifdef __cplusplus
 
 #include <glibmm/ustring.h>
 
 void set_lyrics(DB_playItem_t * track, Glib::ustring past, Glib::ustring present, Glib::ustring future, Glib::ustring padding);
+
+extern int width;
 
 extern "C" {
 #endif
