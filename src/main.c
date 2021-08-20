@@ -16,7 +16,9 @@ static DB_misc_t plugin;
 
 static const char settings_dlg[] =
 	"property \"Lyrics alignment type\" select[3] lyricbar.lyrics.alignment 1 left center right;"
-	"property \"Custom lyrics fetching command\" entry lyricbar.customcmd \"\";";
+	"property \"Custom lyrics fetching command\" entry lyricbar.customcmd \"\";"
+	"property \"Highlight lyrics color\" entry lyricbar.highlightcolor \"\";"
+	"property \"Padding lines\"  spinbtn[0,15,1] lyrics.paddinglines 1 \";";
 
 static int lyricbar_disconnect() {
 	if (gtkui_plugin) {
@@ -84,7 +86,6 @@ DB_plugin_t *ddb_lyricbar_gtk2_load(DB_functions_t *ddb) {
 DB_plugin_t *ddb_lyricbar_gtk3_load(DB_functions_t *ddb) {
 #endif
 	deadbeef = ddb;
-	setlocale(LC_ALL, "");
 	bindtextdomain("deadbeef-lyricbar", "/usr/share/locale");
 	textdomain("deadbeef-lyricbar");
 	remove_action.title = _(remove_action.title);
@@ -105,9 +106,9 @@ static DB_misc_t plugin = {
 #else
 	.plugin.id = "lyricbar-gtk3",
 #endif
-	.plugin.descr = "Lyricbar plugin for DeadBeeF audio player.\nFetches and shows song’s lyrics.\n",
-	.plugin.copyright = "Copyright (C) 2015 Ignat Loskutov <ignat.loskutov@gmail.com>\n",
-	.plugin.website = "https://github.com/loskutov/deadbeef-lyricbar",
+	.plugin.descr = "Lyricbar plugin for DeadBeeF audio player.\nPlugin for DeaDBeeF audio player that fetches and shows the song’s with scroll on sync lyrics. \n",
+	.plugin.copyright = "Copyleft (C) 2015 AsVHEn\n",
+	.plugin.website = "https://github.com/asvhen/deadbeef-lyricbar",
 	.plugin.connect = lyricbar_connect,
 	.plugin.disconnect = lyricbar_disconnect,
 	.plugin.configdialog = settings_dlg,

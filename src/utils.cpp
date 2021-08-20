@@ -14,6 +14,7 @@
 #include <stdexcept>
 #include <thread>
 #include <pthread.h>
+#include <mutex>
 
 #include <giomm.h>
 #include <glibmm/fileutils.h>
@@ -39,30 +40,30 @@ std::string otxt = lyrics_dir + "options.txt";
 const char *optionstxt = otxt.c_str();
 
 
-
+std::mutex mtx;
 
 bool lyricstart = false;
 bool syncedfound = true;
 bool syncedlyrics = false;
-bool firstthread = false;
-bool secondthread = false;
 std::string str;
+float length;
+float *pos;
 
-
-struct sync
-{
+struct sync{
 	vector<ustring> synclyrics;
 	vector<double> position;
 };
 
 struct sync lrc;
 
-struct chopped
-{
+struct chopped{
 	ustring past;
 	ustring present;
 	ustring future;
 };
+
+struct timespec ts = {0, 50000000};
+
 
 bool is_playing(DB_playItem_t *track) {
 	DB_playItem_t *pl_track = deadbeef->streamer_get_playing_track();
@@ -164,6 +165,7 @@ void write_synced( DB_playItem_t *it){
 	ustring padding = "";
 	int presentpos = 0;
 	int minimuntopad = 0;
+	int numlines = deadbeef->conf_get_int("lyrics.paddinglines", 15);
 	
 	//cout << width << "\n";
 
@@ -191,9 +193,9 @@ void write_synced( DB_playItem_t *it){
 //	cout << future << "\n";
 
 		//Add padding variable at beginning of lyrics to show to make scroll when removing a past line.
-		if ((presentpos - 15) > 0){
-			minimuntopad = presentpos - 15;
-			for  (int j = 0 ; j < (int)(((lrc.position[presentpos +1] - pos)/(lrc.position[presentpos+1] -lrc.position[presentpos]))*574/31); j++){
+		if ((presentpos - numlines) > 0){
+			minimuntopad = presentpos - numlines;
+			for  (int j = 0 ; j < (int)(((lrc.position[presentpos +1] - pos)/(lrc.position[presentpos+1] -lrc.position[presentpos]))*38*numlines/31); j++){
 				padding.append("\n");
 			}
 		}
@@ -217,54 +219,18 @@ void write_synced( DB_playItem_t *it){
 	}
 }
 
-void thread_listener(DB_playItem_t *track, int number ){
 
-	float pos = deadbeef->streamer_get_playpos();
-	float length = deadbeef->pl_get_item_duration(track);
+void thread_listener(DB_playItem_t *track){
+
 
 	//cout << "Posición: " << pos << "\n";
 
-	struct timespec tim, tim2;
-		tim.tv_sec = 0;
-		tim.tv_nsec = 50000000;
-
-	if (firstthread == false && secondthread == false){
-		firstthread = true;
-		number = 1;
-	}
-	if (firstthread == false && secondthread == true){
-		if (number != 2){
-			firstthread = true;
-			number = 1;
-		}
-	}
-	else if (firstthread == true && secondthread == false){
-		if (number != 1){
-		secondthread = true;
-		number = 2;
-		}
-	}
-	else if (firstthread == true && secondthread == true){
-		if (number == 1){
-			firstthread = false;
-		}
-		else if (number == 2){
-			secondthread = false;
-		}
-	pthread_exit (NULL);
-	}
-	if (pos < length - 0.1){
-		nanosleep(&tim, &tim2);
+	if (deadbeef->streamer_get_playpos() < deadbeef->pl_get_item_duration(track) - 0.1){
+		nanosleep(&ts, NULL);
 		write_synced(track);
-		thread_listener(track, number);
+		thread_listener(track);
 	}
 	else{
-		if (number == 1){
-			firstthread = false;
-		}
-		else{
-			secondthread = false;
-		}
 		pthread_exit (NULL);
 
 	}
@@ -280,9 +246,12 @@ void chopset_lyrics(DB_playItem_t *track, ustring lyrics){
 	lrc.position.push_back((float)length);
 	lrc.synclyrics.push_back("\n");
 	lrc.synclyrics.push_back("\n");
-	std::thread t1(thread_listener, it, -1);
+	mtx.lock();
+	std::thread t1(thread_listener, it);
 	deadbeef->pl_item_unref(it);
 	t1.detach();
+	mtx.unlock();
+
 }
 
 
