@@ -17,8 +17,8 @@ static DB_misc_t plugin;
 static const char settings_dlg[] =
 	"property \"Lyrics alignment type\" select[3] lyricbar.lyrics.alignment 1 left center right;"
 	"property \"Custom lyrics fetching command\" entry lyricbar.customcmd \"\";"
-	"property \"Highlight lyrics color\" entry lyricbar.highlightcolor \"\";"
-	"property \"Padding lines\"  spinbtn[0,15,1] lyrics.paddinglines 1 \";";
+	"property \"Highlight lyrics color (#XXXXXX HEX type. Restart needed)\" entry lyricbar.highlightcolor \"\";"
+	"property \"Padding lines\"  spinbtn[0,15,1] lyrics.paddinglines 15 \";";
 
 static int lyricbar_disconnect() {
 	if (gtkui_plugin) {

@@ -23,7 +23,6 @@ using namespace Glib;
 
 int width;
 
-
 // TODO: eliminate all the global objects, as their initialization is not well defined
 static TextView *lyricView;
 static ScrolledWindow *lyricbar;
@@ -31,7 +30,6 @@ static RefPtr<TextBuffer> refBuffer;
 static RefPtr<TextTag> tagItalic, tagBold, tagLarge, tagCenter, tagSmall, tagForegroundColor;
 static vector<RefPtr<TextTag>> tagsTitle, tagsArtist, tagsSyncline, tagPadding;
 vector<RefPtr<TextTag>> tags;
-
 
 void set_lyrics(DB_playItem_t *track, ustring past, ustring present, ustring future, ustring padding) {
 	signal_idle().connect_once([track, past, present, lyrics = move(future), padding ] {
@@ -44,7 +42,6 @@ void set_lyrics(DB_playItem_t *track, ustring past, ustring present, ustring fut
 			artist = deadbeef->pl_find_meta(track, "artist") ?: _("Unknown Artist");
 			title  = deadbeef->pl_find_meta(track, "title") ?: _("Unknown Title");
 		}
-
 		width = lyricbar->get_allocation().get_width();
 		//cout << "Rectangulo: "<< width << "\n";
 
@@ -127,7 +124,7 @@ GtkWidget *construct_lyricbar() {
 	tagCenter->property_justification() = JUSTIFY_CENTER;
 
 	tagForegroundColor = refBuffer->create_tag();
-	tagForegroundColor->property_foreground() = "#571c1c";
+	tagForegroundColor->property_foreground() = deadbeef->conf_get_str_fast("lyricbar.highlightcolor", "#571c1c");
 
 	tagsTitle = {tagLarge, tagBold, tagCenter};
 	tagsArtist = {tagItalic, tagCenter};
@@ -139,6 +136,7 @@ GtkWidget *construct_lyricbar() {
 	
 	lyricView->set_editable(false);
 	lyricView->set_can_focus(false);
+	lyricView->set_name("lyricView");
 	lyricView->set_justification(get_justification());
     lyricView->get_vadjustment()->set_value(1000);
 	lyricView->set_wrap_mode(WRAP_WORD_CHAR);
@@ -155,7 +153,7 @@ GtkWidget *construct_lyricbar() {
 	
 	//load css
 	auto data = g_strdup_printf("\
-  		textview text {\
+  		#lyricView text {\
   		background-color: #F6F6F6;\
 		}\
 	");

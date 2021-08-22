@@ -29,7 +29,6 @@ using namespace Glib;
 
 const DB_playItem_t *last;
 
-static const ustring LW_FMT = "http://lyrics.wikia.com/api.php?action=lyrics&fmt=xml&artist=%1&song=%2";
 static const char *home_cache = getenv("XDG_CACHE_HOME");
 static const std::string lyrics_dir = (home_cache ? string(home_cache) : string(getenv("HOME")) + "/.cache")
                                + "/deadbeef/lyrics/";
@@ -47,7 +46,7 @@ bool syncedfound = true;
 bool syncedlyrics = false;
 std::string str;
 float length;
-float *pos;
+float pos;
 
 struct sync{
 	vector<ustring> synclyrics;
@@ -117,7 +116,7 @@ struct sync bubbleSort(vector<double> arr, vector<ustring> text ,  int n)
 }
 
 struct sync lyric2vector( ustring lyrics){
-	//cout << "lyric2vector" "\n";
+	cout << "lyric2vector" "\n";
 	vector<ustring> synclyrics;
 	vector<double> position;
 	ustring line;
@@ -128,7 +127,7 @@ struct sync lyric2vector( ustring lyrics){
 		if ((lyrics.at(i) == '[') && (lyrics.at(i+1) == '0') && (lyrics.at(i+3) == ':') ) {
   			++repeats;
 			position.push_back ((lyrics.at(i + 1) - 48)*600 + (lyrics.at(i + 2) - 48)*60 + (lyrics.at(i + 4) - 48)*10 + (lyrics.at(i + 5) - 48) + (lyrics.at(i + 7) - 48)*0.1 + (lyrics.at(i + 8) - 48)*0.01);
-			if (lyrics.at(i+10) != '[') {
+			if ((lyrics.length() > i + 10) && (lyrics.at(i+10) != '[')) {
 				line = lyrics.substr(i + 10, lyrics.length() - i - 10);
 				squarebracket = line.find_first_of('[');
 				if (((lyrics.at(i+8 + squarebracket)) != '\n') && (lyrics.at(i+8 + squarebracket)) != '\r'){
@@ -139,6 +138,7 @@ struct sync lyric2vector( ustring lyrics){
 				}
 				++repeats;
 				while (--repeats ) {
+					cout << line << "\n";
 					synclyrics.push_back (line);
 				}
 					
@@ -158,7 +158,7 @@ struct sync lyric2vector( ustring lyrics){
 }
 
 void write_synced( DB_playItem_t *it){
-	float pos = deadbeef->streamer_get_playpos();
+	pos = deadbeef->streamer_get_playpos();
 	ustring past = "";
 	ustring present = "";
 	ustring future = "";
@@ -205,7 +205,7 @@ void write_synced( DB_playItem_t *it){
 			past.append(lrc.synclyrics[i] + "\n");
 		}
 		//Add padding variable at beginning of lyrics to show to make scroll with first lines.
-		for  (int j = 0; j < (int)((15 - presentpos -1   - (pos - lrc.position[presentpos])/(lrc.position[presentpos+1] -lrc.position[presentpos]))*574/31 - 62); j++){
+		for  (int j = 0; j < (int)((numlines - presentpos -1   - (pos - lrc.position[presentpos])/(lrc.position[presentpos+1] -lrc.position[presentpos]))*574/31 - 62); j++){
 			padding.append("\n");
 		}
 	set_lyrics(it, past, present, future, padding);
@@ -222,9 +222,6 @@ void write_synced( DB_playItem_t *it){
 
 void thread_listener(DB_playItem_t *track){
 
-
-	//cout << "Posición: " << pos << "\n";
-
 	if (deadbeef->streamer_get_playpos() < deadbeef->pl_get_item_duration(track) - 0.1){
 		nanosleep(&ts, NULL);
 		write_synced(track);
@@ -238,7 +235,7 @@ void thread_listener(DB_playItem_t *track){
 
 }
 void chopset_lyrics(DB_playItem_t *track, ustring lyrics){
-	//cout << "Chopset lyrics" "\n";
+	cout << "Chopset lyrics" "\n";
 	lrc = lyric2vector(lyrics);
 	DB_playItem_t *it = deadbeef->streamer_get_playing_track();
 	float length = deadbeef->pl_get_item_duration( it );
@@ -464,7 +461,7 @@ experimental::optional<ustring> load_cached_lyrics(const char *artist, const cha
 
 bool save_cached_lyrics(const string &artist, const string &title, const string &lyrics) {
 	string filename = cached_filename(artist, title);
-	//std::cout << "save_cached sync: " << syncedlyrics << "\n";
+	std::cout << "save_cached sync: " << syncedlyrics << "\n";
 	ofstream t(filename);
 	if (!t) {
 		cerr << "lyricbar: could not open file for writing: " << filename << endl;
@@ -535,40 +532,6 @@ experimental::optional<ustring> get_lyrics_from_script(DB_playItem_t *track) {
 	}
 	return {std::move(res)};
 }
-
-void char_asciify(gunichar c, ustring &out) {
-	switch (c) {
-		case U'’':
-		case U'´':
-		case U'`':
-			c = '\'';
-			break;
-		case U'“':
-		case U'”':
-			c = '"';
-			break;
-		case U'–':
-		case U'—':
-			c = '-';
-			break;
-		case U'…':
-			out.append(3, '.');
-			return;
-		}
-	out.push_back(c);
-}
-
-void asciify(ustring &s) {
-	s.normalize(NormalizeMode::NORMALIZE_ALL_COMPOSE);
-	ustring ans;
-	ans.reserve(s.bytes());
-	for (auto c : s) {
-		char_asciify(c, ans);
-	}
-	s = std::move(ans);
-}
-
-
 
 void update_lyrics(void *tr) {
 	DB_playItem_t *track = static_cast<DB_playItem_t*>(tr);
