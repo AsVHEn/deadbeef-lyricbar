@@ -10,7 +10,6 @@ with import <nixpkgs> {}; {
       gnome2.gtk
       gnome3.gtk
       deadbeef
-      libxmlxx3
     ];
   };
 }
