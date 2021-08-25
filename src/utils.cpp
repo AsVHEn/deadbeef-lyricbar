@@ -195,7 +195,7 @@ void write_synced( DB_playItem_t *it){
 		//Add padding variable at beginning of lyrics to show to make scroll when removing a past line.
 		if ((presentpos - numlines) > 0){
 			minimuntopad = presentpos - numlines;
-			for  (int j = 0 ; j < (int)(((lrc.position[presentpos +1] - pos)/(lrc.position[presentpos+1] -lrc.position[presentpos]))*38*numlines/31); j++){
+			for  (int j = 0 ; j < (int)(((lrc.position[presentpos +1] - pos)/(lrc.position[presentpos+1] -lrc.position[presentpos]))*512/31); j++){
 				padding.append("\n");
 			}
 		}
@@ -205,7 +205,7 @@ void write_synced( DB_playItem_t *it){
 			past.append(lrc.synclyrics[i] + "\n");
 		}
 		//Add padding variable at beginning of lyrics to show to make scroll with first lines.
-		for  (int j = 0; j < (int)((numlines - presentpos -1   - (pos - lrc.position[presentpos])/(lrc.position[presentpos+1] -lrc.position[presentpos]))*574/31 - 62); j++){
+		for  (int j = 0; j < (int)((numlines - presentpos -1   - (pos - lrc.position[presentpos])/(lrc.position[presentpos+1] -lrc.position[presentpos]))*38*numlines/31 - 62); j++){
 			padding.append("\n");
 		}
 	set_lyrics(it, past, present, future, padding);
@@ -596,12 +596,14 @@ void update_lyrics(void *tr) {
     const char *firs  = deadbeef->pl_find_meta (track, "FIRST_PLAYED");
 	int bitrate = deadbeef->streamer_get_apx_bitrate();
 	int playcount = deadbeef->playqueue_get_count();
-	ustring last = las;
-	ustring first = firs;
+
+	info.append("\n \n \n \n");
+
+
 	if (count == -1){
 		count = 0;
 	}
-	info.append("\n \n \n \n");
+
 	if (count == 1){
 		info.append("Escuchado una vez \n \n \n");
 	}
@@ -611,17 +613,27 @@ void update_lyrics(void *tr) {
 		info.append(" veces \n \n \n");
 	}
 
-	info.append("Por primera vez el ");
-	info.append(first.substr(0,10));
-	info.append("\n a las ");
-	info.append(first.substr(11, first.length() -1));
-	info.append("\n \n \n");
-	
-	info.append("Por última vez el ");
-	info.append(last.substr(0,10));
-	info.append("\n a las ");
-	info.append( last.substr(11, first.length() -1));
-	info.append("\n \n \n");
+	if (firs != NULL) {
+		ustring first = firs;	
+		info.append("Por primera vez el ");
+		info.append(first.substr(0,10));
+		info.append("\n a las ");
+		info.append(first.substr(11, first.length() -1));
+		info.append("\n \n \n");
+	}
+	else{
+		info.append("No se ha escuchado previamente \n \n \n");
+	}
+
+	if (las != NULL) {
+		ustring last = las;
+		info.append("Por última vez el ");
+		info.append(last.substr(0,10));
+		info.append("\n a las ");
+		info.append( last.substr(11, last.length() -1));
+		info.append("\n \n \n");
+	}
+
 
 	info.append("Bitrate: ");
 	info.append(std::to_string(bitrate));
