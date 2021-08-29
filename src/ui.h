@@ -3,6 +3,7 @@
 #define LYRICBAR_UI_H
 #include <gtk/gtk.h>
 #include <deadbeef/deadbeef.h>
+#include <vector>
 
 #include "utils.h"
 
@@ -10,7 +11,12 @@
 
 #include <glibmm/ustring.h>
 
+using namespace std;
+
 void set_lyrics(DB_playItem_t * track, Glib::ustring past, Glib::ustring present, Glib::ustring future, Glib::ustring padding);
+
+
+vector<int> sizelines(DB_playItem_t * track, Glib::ustring lyrics);
 
 extern int width;
 

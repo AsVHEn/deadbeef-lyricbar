@@ -47,6 +47,10 @@ bool syncedlyrics = false;
 std::string str;
 float length;
 float pos;
+int paddstodo = 0;
+int paddinglines = 0;
+
+vector<int> linessizes;
 
 struct sync{
 	vector<ustring> synclyrics;
@@ -138,7 +142,6 @@ struct sync lyric2vector( ustring lyrics){
 				}
 				++repeats;
 				while (--repeats ) {
-					cout << line << "\n";
 					synclyrics.push_back (line);
 				}
 					
@@ -151,8 +154,8 @@ struct sync lyric2vector( ustring lyrics){
 //	for (auto k = goodlyrics.position.begin(); k != goodlyrics.position.end(); ++k)
 //    	std::cout << *k << " ";
 
-//	for (auto i = goodlyrics.synclyrics.begin(); i != goodlyrics.synclyrics.end(); ++i)
-//    	std::cout << *i << '\n';
+	for (auto i = goodlyrics.synclyrics.begin(); i != goodlyrics.synclyrics.end(); ++i)
+    	std::cout << *i << '\n';
 	
 	return goodlyrics;
 }
@@ -166,8 +169,6 @@ void write_synced( DB_playItem_t *it){
 	int presentpos = 0;
 	int minimuntopad = 0;
 	int numlines = deadbeef->conf_get_int("lyrics.paddinglines", 15);
-	
-	//cout << width << "\n";
 
 	if ( lrc.position.size() > 2) {
 
@@ -191,23 +192,26 @@ void write_synced( DB_playItem_t *it){
 //	cout << present << "\n";
 //	cout << "------------------- FUTURE --------------------------"<< "\n";
 //	cout << future << "\n";
-
+		cout << "Present pos: " << presentpos << "\n";
 		//Add padding variable at beginning of lyrics to show to make scroll when removing a past line.
-		if ((presentpos - numlines) > 0){
-			minimuntopad = presentpos - numlines;
-			for  (int j = 0 ; j < (int)(((lrc.position[presentpos +1] - pos)/(lrc.position[presentpos+1] -lrc.position[presentpos]))*512/31); j++){
+		if (((!linessizes.empty()) && (presentpos - linessizes[1]) > 0)){
+			minimuntopad = presentpos - linessizes[1];
+			cout << "Linessizes present at " << presentpos << " :" << linessizes[presentpos - linessizes[1] + 5] << "\n";
+			for  (int j = 0 ; j < (int)(((lrc.position[presentpos +1] - pos)/(lrc.position[presentpos+1] -lrc.position[presentpos]))*(linessizes[presentpos - linessizes[1] + 5] -1)); j++){
 				padding.append("\n");
 			}
 		}
 
-		//Add past lyrics removing lines to make scroll.
+		//Removing past lyrics lines to make scroll.
 		for (unsigned i = minimuntopad; lrc.position[i+1] < pos && i < lrc.position.size()-2; i++){
 			past.append(lrc.synclyrics[i] + "\n");
 		}
-		//Add padding variable at beginning of lyrics to show to make scroll with first lines.
-		for  (int j = 0; j < (int)((numlines - presentpos -1   - (pos - lrc.position[presentpos])/(lrc.position[presentpos+1] -lrc.position[presentpos]))*38*numlines/31 - 62); j++){
+		if (!linessizes.empty()){
+			for  (int j = 0; j < (int)((lrc.position[linessizes[1]+1] - pos)/(lrc.position[linessizes[1]+1])*linessizes[0]); j++){
 			padding.append("\n");
+			}
 		}
+		//Add padding variable at beginning of lyrics to show to make scroll with first lines.
 	set_lyrics(it, past, present, future, padding);
 	}
 
@@ -222,7 +226,7 @@ void write_synced( DB_playItem_t *it){
 
 void thread_listener(DB_playItem_t *track){
 
-	if (deadbeef->streamer_get_playpos() < deadbeef->pl_get_item_duration(track) - 0.1){
+	if (track == deadbeef->streamer_get_playing_track()) {
 		nanosleep(&ts, NULL);
 		write_synced(track);
 		thread_listener(track);
@@ -243,12 +247,15 @@ void chopset_lyrics(DB_playItem_t *track, ustring lyrics){
 	lrc.position.push_back((float)length);
 	lrc.synclyrics.push_back("\n");
 	lrc.synclyrics.push_back("\n");
-	mtx.lock();
+//	mtx.lock();
 	std::thread t1(thread_listener, it);
 	deadbeef->pl_item_unref(it);
 	t1.detach();
-	mtx.unlock();
+	linessizes = sizelines(track, lyrics);		
 
+
+//	mtx.unlock();
+	
 }
 
 
@@ -535,7 +542,7 @@ experimental::optional<ustring> get_lyrics_from_script(DB_playItem_t *track) {
 
 void update_lyrics(void *tr) {
 	DB_playItem_t *track = static_cast<DB_playItem_t*>(tr);
-
+	linessizes.clear();
 	if (auto lyrics = get_lyrics_from_metadata(track)) {
 		if (syncedlyrics == true){
 			chopset_lyrics(track, *lyrics);

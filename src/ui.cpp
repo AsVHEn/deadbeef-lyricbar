@@ -21,6 +21,14 @@ using namespace std;
 using namespace Gtk;
 using namespace Glib;
 
+struct linessizes{
+	int titlesize;
+	int artistsize;
+	int newlinesize;
+};
+
+struct timespec tss = {0, 50000000000000};
+
 int width;
 
 // TODO: eliminate all the global objects, as their initialization is not well defined
@@ -30,6 +38,36 @@ static RefPtr<TextBuffer> refBuffer;
 static RefPtr<TextTag> tagItalic, tagBold, tagLarge, tagCenter, tagSmall, tagForegroundColor;
 static vector<RefPtr<TextTag>> tagsTitle, tagsArtist, tagsSyncline, tagPadding;
 vector<RefPtr<TextTag>> tags;
+
+vector<int>  sizelines(DB_playItem_t * track, Glib::ustring lyrics){
+	set_lyrics(track, lyrics,"","","");
+	sleep(2);
+	int sumatory = 0;
+	int temporaly = 0;
+	vector<int>  values;
+	values.push_back(lyricbar->get_allocation().get_height()/2);
+	values.push_back(0);
+	Gdk::Rectangle rectangle;
+
+	for (int i = 2; i < refBuffer->get_line_count()-1; i++){
+		lyricView->get_iter_location(refBuffer->get_iter_at_line(i-2), rectangle);
+		cout << "Rectangle Y: " <<  rectangle.get_y() << " X: " <<  rectangle.get_x() << " get_height: " <<  rectangle.get_height() << " get_width: " <<  rectangle.get_width() << " Punto medio: " << 		lyricbar->get_allocation().get_height()/2 <<"\n";
+		values.push_back(rectangle.get_y() - temporaly);
+		temporaly = rectangle.get_y();
+	}
+	for (unsigned i = 2; i < values.size()-2; i++){
+		sumatory += values[i];
+		cout << values[i] << " " << i  << " " << sumatory << "\n";
+		if (sumatory > (values[0] - values[2] - values[3] - values[4])){
+			values[1] = i-2;
+			break;
+		}
+	}
+
+return values;
+	
+
+}
 
 void set_lyrics(DB_playItem_t *track, ustring past, ustring present, ustring future, ustring padding) {
 	signal_idle().connect_once([track, past, present, lyrics = move(future), padding ] {
@@ -42,20 +80,30 @@ void set_lyrics(DB_playItem_t *track, ustring past, ustring present, ustring fut
 			artist = deadbeef->pl_find_meta(track, "artist") ?: _("Unknown Artist");
 			title  = deadbeef->pl_find_meta(track, "title") ?: _("Unknown Title");
 		}
-		width = lyricbar->get_allocation().get_width();
-		//cout << "Rectangulo: "<< width << "\n";
-
+		//width = lyricbar->get_allocation().get_width();
+	
 		refBuffer->erase(refBuffer->begin(), refBuffer->end());
 		refBuffer->insert_with_tags(refBuffer->begin(), title, tagsTitle);
 		refBuffer->insert_with_tags(refBuffer->end(), ustring{"\n"} + artist + "\n\n", tagsArtist);
 
+		//static  RefPtr<TextBuffer> text_buffer = lyricView->get_buffer();
 		bool italic = false;
 		bool bold = false;
 		size_t prev_mark = 0;
+		
 		vector<RefPtr<TextTag>> tags;
 		refBuffer->insert_with_tags(refBuffer->end(), padding, tagPadding);
 		refBuffer->insert_with_tags(refBuffer->end(),past, tags);
 		refBuffer->insert_with_tags(refBuffer->end(),present, tagsSyncline);
+
+		//static TextIter mainline = refBuffer->get_iter_at_line(refBuffer->get_line_count());
+		//lyricView->get_iter_location(mainline, aa);
+		//refMark = refBuffer->create_mark("mark", refBuffer->get_iter_at_line(refBuffer->get_line_count()), false);
+		//cout << "Get pixels above lines: " << lyricView->get_visible_rect() << "\n";
+		//cout << "Get pixels below lines: " << lyricView->get_pixels_below_lines() << "\n";
+		//cout << "Text at middle: " << text_buffer->get_line_count() << "\n";
+		//auto endi = refBuffer->end();
+		//gtk_text_buffer_create_mark(lyricView->get_buffer(), "mark", false);
 		//auto end = refBuffer->get_iter_at_line(refBuffer->get_line_count() - 100);
 		//lyricView->scroll_to(end);
 		//refBuffer->insert_with_tags(refBuffer->end(),lyrics, tags);
@@ -118,7 +166,7 @@ GtkWidget *construct_lyricbar() {
 	tagLarge->property_scale() = Pango::SCALE_LARGE;
 
 	tagSmall = refBuffer->create_tag();
-	tagSmall->property_scale() = Pango::SCALE_MEDIUM/20;
+	tagSmall->property_scale() = Pango::SCALE_MEDIUM/17;
 
 	tagCenter = refBuffer->create_tag();
 	tagCenter->property_justification() = JUSTIFY_CENTER;
@@ -150,6 +198,7 @@ GtkWidget *construct_lyricbar() {
 	lyricbar->set_policy(POLICY_AUTOMATIC, POLICY_AUTOMATIC);
 
 	/**********/
+
 	
 	//load css
 	auto data = g_strdup_printf("\
