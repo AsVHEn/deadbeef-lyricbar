@@ -67,13 +67,21 @@ struct chopped{
 
 struct timespec ts = {0, 50000000};
 
+// For debug:
 
 bool is_playing(DB_playItem_t *track) {
 	DB_playItem_t *pl_track = deadbeef->streamer_get_playing_track();
-	if (!pl_track)
+	if ((pl_track) && (pl_track != track)){
+		deadbeef->pl_item_unref(pl_track);
 		return false;
+	}
+	else if (!pl_track){
+		return false;
+	}
+	else{
 	deadbeef->pl_item_unref(pl_track);
 	return pl_track == track;
+	}
 }
 
 void swap(double *xp, double *yp)
@@ -90,7 +98,7 @@ void swaptext(ustring *xp, ustring *yp)
     *yp = temp;
 }
  
-// A function to implement bubble sort
+// A function to bubble sort lyrics and timestamps.
 struct sync bubbleSort(vector<double> arr, vector<ustring> text ,  int n)
 {
 	if ((arr.size() == 0) || (text.size() != arr.size())){
@@ -105,7 +113,7 @@ struct sync bubbleSort(vector<double> arr, vector<ustring> text ,  int n)
 	else{
     	int i, j;
     	for (i = 0; i < n-1; i++){   
-    		// Last i elements are already in place
+    		// Last i elements are already in place.
     		for (j = 0; j < n-i-1; j++){
         		if (arr[j] > arr[j+1]){
         		    swap(&arr[j], &arr[j+1]);
@@ -113,12 +121,12 @@ struct sync bubbleSort(vector<double> arr, vector<ustring> text ,  int n)
 				}
 			}
 		}
-	//cout << "Bubbleshort done \n";
 	struct sync retur = {text,arr};
 	return retur;
 	}
 }
 
+// Function to parse synced lyrics:
 struct sync lyric2vector( ustring lyrics){
 	cout << "lyric2vector" "\n";
 	vector<ustring> synclyrics;
@@ -151,15 +159,18 @@ struct sync lyric2vector( ustring lyrics){
 
 	int n = position.size();
 	struct sync  goodlyrics = bubbleSort(position, synclyrics, n);
+
+// For debug:
 //	for (auto k = goodlyrics.position.begin(); k != goodlyrics.position.end(); ++k)
 //    	std::cout << *k << " ";
 
-	for (auto i = goodlyrics.synclyrics.begin(); i != goodlyrics.synclyrics.end(); ++i)
-    	std::cout << *i << '\n';
+//	for (auto i = goodlyrics.synclyrics.begin(); i != goodlyrics.synclyrics.end(); ++i)
+//    	std::cout << *i << '\n';
 	
 	return goodlyrics;
 }
 
+// Function to remark line:
 void write_synced( DB_playItem_t *it){
 	pos = deadbeef->streamer_get_playpos();
 	ustring past = "";
@@ -178,40 +189,31 @@ void write_synced( DB_playItem_t *it){
 					present = lrc.synclyrics[i] + "\n";
 					presentpos = i;
 				}
-			//else{
-			//	past.append(lrc.synclyrics[i] + "\n");
-			//}
-				}
+			}
 			else if (pos < lrc.position[i]){
 					future.append(lrc.synclyrics[i] + "\n");
 			}
 		}
-//	cout << "------------------- PAST --------------------------"<< "\n";
-//	cout << past << "\n";
-//	cout << "------------------- PRESENT --------------------------"<< "\n";
-//	cout << present << "\n";
-//	cout << "------------------- FUTURE --------------------------"<< "\n";
-//	cout << future << "\n";
-		cout << "Present pos: " << presentpos << "\n";
-		//Add padding variable at beginning of lyrics to show to make scroll when removing a past line.
-		if (((!linessizes.empty()) && (presentpos - linessizes[1]) > 0)){
-			minimuntopad = presentpos - linessizes[1];
-			cout << "Linessizes present at " << presentpos << " :" << linessizes[presentpos - linessizes[1] + 5] << "\n";
-			for  (int j = 0 ; j < (int)(((lrc.position[presentpos +1] - pos)/(lrc.position[presentpos+1] -lrc.position[presentpos]))*(linessizes[presentpos - linessizes[1] + 5] -1)); j++){
-				padding.append("\n");
-			}
-		}
 
-		//Removing past lyrics lines to make scroll.
-		for (unsigned i = minimuntopad; lrc.position[i+1] < pos && i < lrc.position.size()-2; i++){
-			past.append(lrc.synclyrics[i] + "\n");
-		}
+		//Add padding variable at beginning of lyrics to show to make scroll with first lines.
 		if (!linessizes.empty()){
 			for  (int j = 0; j < (int)((lrc.position[linessizes[1]+1] - pos)/(lrc.position[linessizes[1]+1])*linessizes[0]); j++){
 			padding.append("\n");
 			}
 		}
-		//Add padding variable at beginning of lyrics to show to make scroll with first lines.
+
+		//Add padding variable at beginning of lyrics to show to make scroll when removing a past line.
+		if (((!linessizes.empty()) && (presentpos - linessizes[1]) > 0)){
+			minimuntopad = presentpos - linessizes[1];
+			for  (int j = 0 ; j < (int)(((lrc.position[presentpos +1] - pos)/(lrc.position[presentpos+1] -lrc.position[presentpos]))*(linessizes[presentpos - linessizes[1] + 5] -1)); j++){
+				padding.append("\n");
+			}
+		}
+
+		//Removing first past lyrics lines to make scroll.
+		for (unsigned i = minimuntopad; lrc.position[i+1] < pos && i < lrc.position.size()-2; i++){
+			past.append(lrc.synclyrics[i] + "\n");
+		}
 	set_lyrics(it, past, present, future, padding);
 	}
 
@@ -223,10 +225,10 @@ void write_synced( DB_playItem_t *it){
 	}
 }
 
-
+// Loop to update lyrics on real time.
 void thread_listener(DB_playItem_t *track){
 
-	if (track == deadbeef->streamer_get_playing_track()) {
+	if (is_playing(track)){
 		nanosleep(&ts, NULL);
 		write_synced(track);
 		thread_listener(track);
@@ -242,19 +244,20 @@ void chopset_lyrics(DB_playItem_t *track, ustring lyrics){
 	cout << "Chopset lyrics" "\n";
 	lrc = lyric2vector(lyrics);
 	DB_playItem_t *it = deadbeef->streamer_get_playing_track();
-	float length = deadbeef->pl_get_item_duration( it );
+	float length = deadbeef->pl_get_item_duration(it);
 	lrc.position.push_back((float)length -0.2);
 	lrc.position.push_back((float)length);
 	lrc.synclyrics.push_back("\n");
 	lrc.synclyrics.push_back("\n");
-//	mtx.lock();
+	mtx.lock();
 	std::thread t1(thread_listener, it);
-	deadbeef->pl_item_unref(it);
 	t1.detach();
-	linessizes = sizelines(track, lyrics);		
+	if (track == it){
+		linessizes = sizelines(track, lyrics);
+	}
+	deadbeef->pl_item_unref(it);
 
-
-//	mtx.unlock();
+	mtx.unlock();
 	
 }
 
