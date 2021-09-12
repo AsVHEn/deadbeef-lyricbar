@@ -3,7 +3,6 @@
 #define LYRICBAR_UI_H
 #include <gtk/gtk.h>
 #include <deadbeef/deadbeef.h>
-#include <vector>
 
 #include "utils.h"
 
