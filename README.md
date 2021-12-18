@@ -14,6 +14,8 @@ To use this plugin, you need to have [gtkmm](http://www.gtkmm.org/) installed.
 You need deadbeef.h file to build this plugin. The file /usr/include/deadbeef/deadbeef.h should've been installed with the player itself. If not -- look for deadbeef-plugin-dev package, or something like this. Or get the file from a source tarball.
 
 ## Installation
+Just download compiled file _ddb_lyricbar_gtk3.so_ and copy to ~/.local/lib/deadbeef or:
+
 Clone this repository and perform the following:
 ```sh
 make [gtk2 or gtk3]
