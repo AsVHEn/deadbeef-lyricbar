@@ -27,7 +27,7 @@ struct linessizes{
 	int newlinesize;
 };
 
-struct timespec tss = {0, 50000000000000};
+struct timespec tss = {0, 100000000};
 
 int width;
 
@@ -35,20 +35,20 @@ int width;
 static TextView *lyricView;
 static ScrolledWindow *lyricbar;
 static RefPtr<TextBuffer> refBuffer;
-static RefPtr<TextTag> tagItalic, tagBold, tagLarge, tagCenter, tagSmall, tagForegroundColor;
-static vector<RefPtr<TextTag>> tagsTitle, tagsArtist, tagsSyncline, tagPadding;
+static RefPtr<TextTag> tagItalic, tagBold, tagLarge, tagCenter, tagSmall, tagForegroundColor, tagLeftmargin, tagRightmargin;
+static vector<RefPtr<TextTag>> tagsTitle, tagsArtist, tagsSyncline, tagsNosyncline, tagPadding;
 vector<RefPtr<TextTag>> tags;
 
-vector<int>  sizelines(DB_playItem_t * track, Glib::ustring lyrics){
+vector<int> sizelines(DB_playItem_t * track, Glib::ustring lyrics){
+	//std::cout << "Sizelines" << "\n";
 	set_lyrics(track, lyrics,"","","");
-	sleep(2);
+	nanosleep(&tss, NULL);
 	int sumatory = 0;
 	int temporaly = 0;
 	vector<int>  values;
-	values.push_back(lyricbar->get_allocation().get_height()/2);
+	values.push_back(lyricbar->get_allocation().get_height()/3);
 	values.push_back(0);
 	Gdk::Rectangle rectangle;
-
 	for (int i = 2; i < refBuffer->get_line_count()-1; i++){
 		lyricView->get_iter_location(refBuffer->get_iter_at_line(i-2), rectangle);
 		values.push_back(rectangle.get_y() - temporaly);
@@ -61,14 +61,13 @@ vector<int>  sizelines(DB_playItem_t * track, Glib::ustring lyrics){
 			break;
 		}
 	}
-
 return values;
 	
 
 }
 
 void set_lyrics(DB_playItem_t *track, ustring past, ustring present, ustring future, ustring padding) {
-	signal_idle().connect_once([track, past, present, lyrics = move(future), padding ] {
+	signal_idle().connect_once([track, past, present, future, padding ] {
 		ustring artist, title;
 		{
 			pl_lock_guard guard;
@@ -82,41 +81,13 @@ void set_lyrics(DB_playItem_t *track, ustring past, ustring present, ustring fut
 		refBuffer->erase(refBuffer->begin(), refBuffer->end());
 		refBuffer->insert_with_tags(refBuffer->begin(), title, tagsTitle);
 		refBuffer->insert_with_tags(refBuffer->end(), ustring{"\n"} + artist + "\n\n", tagsArtist);
-
-		bool italic = false;
-		bool bold = false;
-		size_t prev_mark = 0;
-		
+	
 		vector<RefPtr<TextTag>> tags;
 		refBuffer->insert_with_tags(refBuffer->end(), padding, tagPadding);
-		refBuffer->insert_with_tags(refBuffer->end(),past, tags);
+		refBuffer->insert_with_tags(refBuffer->end(),past, tagsNosyncline);
 		refBuffer->insert_with_tags(refBuffer->end(),present, tagsSyncline);
+		refBuffer->insert_with_tags(refBuffer->end(),future, tagsNosyncline);
 
-		while (prev_mark != ustring::npos) {
-			size_t italic_mark = lyrics.find("''", prev_mark);
-			if (italic_mark == ustring::npos) {
-				refBuffer->insert(refBuffer->end(), lyrics.substr(prev_mark));
-				break;
-			}
-			size_t bold_mark = ustring::npos;
-			if (italic_mark < lyrics.size() - 2 && lyrics[italic_mark + 2] == '\'')
-				bold_mark = italic_mark;
-
-			tags.clear();
-			if (italic) tags.push_back(tagItalic);
-			if (bold)   tags.push_back(tagBold);
-			refBuffer->insert_with_tags(refBuffer->end(),
-			                            lyrics.substr(prev_mark, min(bold_mark, italic_mark) - prev_mark),
-			                            tags);
-
-			if (bold_mark == ustring::npos) {
-				prev_mark = italic_mark + 2;
-				italic = !italic;
-			} else {
-				prev_mark = bold_mark + 3;
-				bold = !bold;
-			}
-		}
 		last = track;
 	});
 }
@@ -144,6 +115,12 @@ GtkWidget *construct_lyricbar() {
 	tagItalic = refBuffer->create_tag();
 	tagItalic->property_style() = Pango::STYLE_ITALIC;
 
+	tagLeftmargin = refBuffer->create_tag();
+	tagLeftmargin->property_left_margin() = 22;
+
+	tagRightmargin = refBuffer->create_tag();
+	tagRightmargin->property_right_margin() = 22;
+
 	tagBold = refBuffer->create_tag();
 	tagBold->property_weight() = Pango::WEIGHT_BOLD;
 
@@ -162,6 +139,7 @@ GtkWidget *construct_lyricbar() {
 	tagsTitle = {tagLarge, tagBold, tagCenter};
 	tagsArtist = {tagItalic, tagCenter};
 	tagsSyncline = {tagBold, tagCenter, tagForegroundColor};
+	tagsNosyncline = {tagLeftmargin, tagRightmargin};
 	tagPadding = {tagSmall, tagCenter};
 
 
@@ -170,6 +148,8 @@ GtkWidget *construct_lyricbar() {
 	lyricView->set_editable(false);
 	lyricView->set_can_focus(false);
 	lyricView->set_name("lyricView");
+	lyricView->set_left_margin(2);
+	lyricView->set_right_margin(2);
 	lyricView->set_justification(get_justification());
     lyricView->get_vadjustment()->set_value(1000);
 	lyricView->set_wrap_mode(WRAP_WORD_CHAR);
@@ -225,7 +205,7 @@ int message_handler(struct ddb_gtkui_widget_s*, uint32_t id, uintptr_t ctx, uint
 //		case DB_EV_TRACKINFOCHANGED:
 			if (!event->track || event->track == last || deadbeef->pl_get_item_duration(event->track) <= 0)
 				return 0;
-			std::cout << "TRACKINFOCHANGED" << "\n";
+			//std::cout << "TRACKINFOCHANGED" << "\n";
 			auto tid = deadbeef->thread_start(update_lyrics, event->track);
 			deadbeef->thread_detach(tid);
 			break;
@@ -240,11 +220,14 @@ void lyricbar_destroy() {
 	delete lyricView;
 	tagsArtist.clear();
 	tagsSyncline.clear();
+	tagsNosyncline.clear();
 	tagsTitle.clear();
 	tagLarge.reset();
 	tagSmall.reset();
 	tagBold.reset();
 	tagItalic.reset();
+	tagRightmargin.reset();
+	tagLeftmargin.reset();
 	refBuffer.reset();
 }
 
