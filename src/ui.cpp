@@ -128,7 +128,7 @@ GtkWidget *construct_lyricbar() {
 	tagLarge->property_scale() = Pango::SCALE_LARGE;
 
 	tagSmall = refBuffer->create_tag();
-	tagSmall->property_scale() = Pango::SCALE_MEDIUM/17;
+	tagSmall->property_scale() = 0.0001;
 
 	tagCenter = refBuffer->create_tag();
 	tagCenter->property_justification() = JUSTIFY_CENTER;

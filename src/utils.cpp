@@ -65,7 +65,7 @@ struct chopped{
 	ustring future;
 };
 
-struct timespec ts = {0, 50000000};
+struct timespec ts = {0, 5000000};
 
 // For debug:
 
@@ -206,7 +206,7 @@ void write_synced( DB_playItem_t *it){
 		//Add padding variable at beginning of lyrics to show to make scroll with first lines.
 		if (!linessizes.empty()){
 			for  (int j = 0; j < (int)((lrc.position[linessizes[1]+1] - pos)/(lrc.position[linessizes[1]+1])*linessizes[0]); j++){
-			padding.append("\n");
+				padding.append("\n");
 			}
 		}
 
@@ -216,6 +216,8 @@ void write_synced( DB_playItem_t *it){
 			for  (int j = 0 ; j < (int)(((lrc.position[presentpos +1] - pos)/(lrc.position[presentpos+1] -lrc.position[presentpos]))*(linessizes[presentpos - linessizes[1] + 5] -1)); j++){
 				padding.append("\n");
 			}
+			cout << "Padding: " <<  (int)(((lrc.position[presentpos +1] - pos)/(lrc.position[presentpos+1] -lrc.position[presentpos]))*(linessizes[presentpos - linessizes[1] + 5] -1)) << "\n";
+			cout << "Minimuntopad: " <<  minimuntopad << "\n";
 		}
 
 		//Removing first past lyrics lines to make scroll.
@@ -263,6 +265,10 @@ void chopset_lyrics(DB_playItem_t *track, ustring lyrics){
 	}
 	if (track == it){
 		linessizes = sizelines(track, prelyrics);
+	}
+	cout << "Linessizes: " << '\n';
+	for (auto i = linessizes.begin(); i != linessizes.end(); ++i){
+    	cout << *i << '\n';
 	}
 	mtx.lock();
 	thread t1(thread_listener, it);
