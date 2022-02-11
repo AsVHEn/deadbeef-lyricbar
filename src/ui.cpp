@@ -40,7 +40,7 @@ static vector<RefPtr<TextTag>> tagsTitle, tagsArtist, tagsSyncline, tagsNosyncli
 vector<RefPtr<TextTag>> tags;
 
 vector<int> sizelines(DB_playItem_t * track, Glib::ustring lyrics){
-	//std::cout << "Sizelines" << "\n";
+	std::cout << "Sizelines" << "\n";
 	set_lyrics(track, lyrics,"","","");
 	nanosleep(&tss, NULL);
 	int sumatory = 0;
@@ -54,9 +54,10 @@ vector<int> sizelines(DB_playItem_t * track, Glib::ustring lyrics){
 		values.push_back(rectangle.get_y() - temporaly);
 		temporaly = rectangle.get_y();
 	}
+	values[1] = values.size()-3;
 	for (unsigned i = 2; i < values.size()-2; i++){
 		sumatory += values[i];
-		if (sumatory > (values[0] - values[2] - values[3] - values[4])){
+		if (sumatory > (values[0] - values[3] - values[4])){
 			values[1] = i-2;
 			break;
 		}
@@ -157,7 +158,6 @@ GtkWidget *construct_lyricbar() {
            lyricView->set_left_margin(20);
         }
 	lyricView->show();
-
 	lyricbar = new ScrolledWindow();
 	lyricbar->add(*lyricView);
 	lyricbar->set_policy(POLICY_AUTOMATIC, POLICY_AUTOMATIC);
