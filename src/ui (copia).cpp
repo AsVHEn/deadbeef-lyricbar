@@ -36,7 +36,7 @@ int width;
 static TextView *lyricView;
 static ScrolledWindow *lyricbar;
 static RefPtr<TextBuffer> refBuffer;
-static RefPtr<TextTag> tagItalic, tagBold, tagLarge, tagCenter, tagSmall, tagForegroundColor, tagLeftmargin, tagRightmargin, tagRegular;
+static RefPtr<TextTag> tagItalic, tagBold, tagLarge, tagCenter, tagSmall, tagForegroundColor, tagLeftmargin, tagRightmargin;
 static vector<RefPtr<TextTag>> tagsTitle, tagsArtist, tagsSyncline, tagsNosyncline, tagPadding;
 vector<RefPtr<TextTag>> tags;
 
@@ -46,17 +46,15 @@ void button_clicked(TextView *lyricView, gpointer data) {
   g_print("clicked\n");
 }
 
-// "Size" lyrics to be able to make lines "dissapear" on top.
 
 vector<int> sizelines(DB_playItem_t * track, Glib::ustring lyrics){
-	//std::cout << "Sizelines" << "\n";
-
+	std::cout << "Sizelines" << "\n";
 	set_lyrics(track, lyrics,"","","");
 	nanosleep(&tss, NULL);
 	int sumatory = 0;
 	int temporaly = 0;
 	vector<int>  values;
-	values.push_back(lyricbar->get_allocation().get_height()*(1 + deadbeef->conf_get_int("lyricbar.vpostion", 1))/6.0);
+	values.push_back(lyricbar->get_allocation().get_height()/3);
 	values.push_back(0);
 	Gdk::Rectangle rectangle;
 	for (int i = 2; i < refBuffer->get_line_count()-1; i++){
@@ -72,8 +70,8 @@ vector<int> sizelines(DB_playItem_t * track, Glib::ustring lyrics){
 			break;
 		}
 	}
-	//std::cout << "Sizelines finished" << "\n";
-	//nanosleep(&tss, NULL);
+	std::cout << "Sizelines finished" << "\n";
+	nanosleep(&tss, NULL);
 	return values;
 }
 
@@ -105,17 +103,7 @@ void set_lyrics(DB_playItem_t *track, ustring past, ustring present, ustring fut
 	});
 }
 
-void sync_or_unsync(bool syncedlyrics){
-	if (syncedlyrics == true){
-		lyricbar->set_policy(POLICY_EXTERNAL, POLICY_EXTERNAL);
-	}
-	else{
-		lyricbar->set_policy(POLICY_AUTOMATIC, POLICY_AUTOMATIC);
-	}
-}
-
 Justification get_justification() {
-
 	int align = deadbeef->conf_get_int("lyricbar.lyrics.alignment", 1);
 	switch (align) {
 		case 0:
@@ -127,26 +115,30 @@ Justification get_justification() {
 	}
 }
 
-void get_tags() {
+
+extern "C"
+
+GtkWidget *construct_lyricbar() {
+
+	Gtk::Main::init_gtkmm_internals();
+	refBuffer = TextBuffer::create();
+
 	tagItalic = refBuffer->create_tag();
 	tagItalic->property_style() = Pango::STYLE_ITALIC;
-	tagItalic->property_scale() = deadbeef->conf_get_float("lyricbar.fontscale", 1);
-
-	tagRegular = refBuffer->create_tag();
-	tagRegular->property_scale() = deadbeef->conf_get_float("lyricbar.fontscale", 1);
+	tagItalic->property_scale() = deadbeef->conf_get_int("lyricbar.fontscale", 1);
 
 	tagLeftmargin = refBuffer->create_tag();
-	tagLeftmargin->property_left_margin() = 22*deadbeef->conf_get_float("lyricbar.fontscale", 1);
+	tagLeftmargin->property_left_margin() = 22;
 
 	tagRightmargin = refBuffer->create_tag();
-	tagRightmargin->property_right_margin() = 22*deadbeef->conf_get_float("lyricbar.fontscale", 1);
+	tagRightmargin->property_right_margin() = 22;
 
 	tagBold = refBuffer->create_tag();
-	tagBold->property_scale() = deadbeef->conf_get_float("lyricbar.fontscale", 1);
 	tagBold->property_weight() = Pango::WEIGHT_BOLD;
+	tagBold->property_scale() = deadbeef->conf_get_int("lyricbar.fontscale", 1);
 
 	tagLarge = refBuffer->create_tag();
-	tagLarge->property_scale() = 1.2*deadbeef->conf_get_float("lyricbar.fontscale", 1);
+	tagLarge->property_scale() = 1.2*deadbeef->conf_get_int("lyricbar.fontscale", 1);
 
 	tagSmall = refBuffer->create_tag();
 	tagSmall->property_scale() = 0.0001;
@@ -155,32 +147,21 @@ void get_tags() {
 	tagCenter->property_justification() = JUSTIFY_CENTER;
 
 	tagForegroundColor = refBuffer->create_tag();
-	tagForegroundColor->property_foreground() = deadbeef->conf_get_str_fast("lyricbar.highlightcolor", "#571c1c");
+	tagForegroundColor->property_foreground() = "#571c1c";
 
 	tagsTitle = {tagLarge, tagBold, tagCenter};
 	tagsArtist = {tagItalic, tagCenter};
 
 	tagsSyncline = {tagBold, tagForegroundColor};
-
 	if (deadbeef->conf_get_int("lyricbar.bold", 1) == 1) {
 		tagsSyncline = {tagBold, tagForegroundColor};
-		tagsNosyncline = {tagRegular, tagLeftmargin, tagRightmargin};
 	}
 	else{
-		tagsSyncline = {tagRegular, tagForegroundColor};
-		tagsNosyncline = {tagRegular};
-    	}
-
+		tagsSyncline = {tagForegroundColor};
+    }
+	tagsNosyncline = {tagLeftmargin, tagRightmargin};
 	tagPadding = {tagSmall};
-}
 
-extern "C"
-
-GtkWidget *construct_lyricbar() {
-
-	Gtk::Main::init_gtkmm_internals();
-	refBuffer = TextBuffer::create();
-	get_tags();
 
 	lyricView = new TextView(refBuffer);
 
@@ -191,11 +172,11 @@ GtkWidget *construct_lyricbar() {
 	//lyricView->set_activatable(false);
 	lyricView->set_right_margin(2);
 	lyricView->set_justification(get_justification());
-    	lyricView->get_vadjustment()->set_value(1000);
+    lyricView->get_vadjustment()->set_value(1000);
 	lyricView->set_wrap_mode(WRAP_WORD_CHAR);
-    	if (get_justification() == JUSTIFY_LEFT) {
-    		lyricView->set_left_margin(20);
-    	}
+    if (get_justification() == JUSTIFY_LEFT) {
+    	lyricView->set_left_margin(20);
+    }
 	lyricView->show();
 	lyricbar = new ScrolledWindow();
 	lyricbar->add(*lyricView);
@@ -239,7 +220,7 @@ GtkWidget *construct_lyricbar() {
 	//lyricView->signal_populate_popup().connect(sigc::ptr_fun(button_clicked));
 
 
-	//std::cout << lyricView->property_populate_all() << "\n";
+	std::cout << lyricView->property_populate_all() << "\n";
 
 
 	Glib::RefPtr<Gtk::CssProvider> cssProvider = Gtk::CssProvider::create();
@@ -267,7 +248,6 @@ int message_handler(struct ddb_gtkui_widget_s*, uint32_t id, uintptr_t ctx, uint
 	switch (id) {
 		case DB_EV_CONFIGCHANGED:
 			debug_out << "CONFIG CHANGED\n";
-			get_tags();
 			signal_idle().connect_once([]{ lyricView->set_justification(get_justification()); });
 			break;
 		case DB_EV_TERMINATE:
@@ -281,15 +261,16 @@ int message_handler(struct ddb_gtkui_widget_s*, uint32_t id, uintptr_t ctx, uint
 		case DB_EV_SONGSTARTED:
 			debug_out << "SONG STARTED\n";
 			if (!event->track || event->track == last || deadbeef->pl_get_item_duration(event->track) <= 0.0){
-				//std::cout << "if in" << "\n";
+				std::cout << "Entró en el if" << "\n";
 				return 0;
 			}
-			//std::cout << "SONG STARTED" << "\n";
-			//std::cout << "LAST: " << last << "\n";
-			//std::cout << "TRACK: " << event->track << "\n";
+			std::cout << "SONG STARTED" << "\n";
+			std::cout << "LAST: " << last << "\n";
+			std::cout << "TRACK: " << event->track << "\n";
 			auto tid = deadbeef->thread_start(update_lyrics, event->track);
 			deadbeef->thread_detach(tid);
 			break;
+
 	}
 
 	return 0;
@@ -302,7 +283,6 @@ void lyricbar_destroy() {
 	tagsArtist.clear();
 	tagsSyncline.clear();
 	tagsNosyncline.clear();
-	tagRegular.clear();
 	tagsTitle.clear();
 	tagLarge.reset();
 	tagSmall.reset();

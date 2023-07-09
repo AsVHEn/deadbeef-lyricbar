@@ -6,6 +6,7 @@
 #include <deadbeef/deadbeef.h>
 #include <deadbeef/gtkui_api.h>
 
+extern int death_signal;
 #ifdef __cplusplus
 extern "C" {
 #endif

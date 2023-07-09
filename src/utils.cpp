@@ -41,6 +41,7 @@ const char *optionstxt = otxt.c_str();
 
 mutex mtx;
 
+int death_signal = 0;
 bool lyricstart = false;
 bool syncedfound = true;
 bool syncedlyrics = false;
@@ -128,7 +129,7 @@ struct sync bubbleSort(vector<double> arr, vector<ustring> text ,  int n)
 
 // Function to parse synced lyrics:
 struct sync lyric2vector( ustring lyrics){
-	cout << "lyric2vector" "\n";
+	//cout << "lyric2vector" "\n";
 	vector<ustring> synclyrics;
 	vector<double> position;
 	ustring line;
@@ -238,7 +239,7 @@ void write_synced( DB_playItem_t *it){
 // Loop to update lyrics on real time.
 void thread_listener(DB_playItem_t *track){
 
-	if (is_playing(track)){
+	if ((is_playing(track)) && death_signal == 0){
 		nanosleep(&ts, NULL);
 		write_synced(track);
 		thread_listener(track);
@@ -255,6 +256,7 @@ void chopset_lyrics(DB_playItem_t *track, ustring lyrics){
 	lrc = lyric2vector(lyrics);
 	DB_playItem_t *it = deadbeef->streamer_get_playing_track();
 	float length = deadbeef->pl_get_item_duration(it);
+
 	lrc.position.push_back((float)length -0.2);
 	lrc.position.push_back((float)length);
 	lrc.synclyrics.push_back("\n");
@@ -567,8 +569,8 @@ void update_lyrics(void *tr) {
 		else{
 			set_lyrics(track, "", "", *lyrics, "");
 		}
-
-		return;
+	sync_or_unsync(syncedlyrics);
+	return;
 	}
 
 	const char *artist;

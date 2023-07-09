@@ -10,20 +10,20 @@
 static ddb_gtkui_t *gtkui_plugin;
 DB_functions_t *deadbeef;
 
-static ddb_gtkui_t *gtkui_plugin;
-
 static DB_misc_t plugin;
 
-static const char settings_dlg[] =
-	"property \"Lyrics alignment type\" select[3] lyricbar.lyrics.alignment 1 left center right;"
-	"property \"Custom lyrics fetching command\" entry lyricbar.customcmd \"\";"
-	//"property \"Padding lines\"  spinbtn[0,15,1] lyrics.paddinglines 15 \";"
-	"property \"Highlight lyrics color (#XXXXXX HEX type. Restart needed)\" entry lyricbar.highlightcolor \"\";";
 
 static int lyricbar_disconnect() {
 	if (gtkui_plugin) {
 		gtkui_plugin->w_unreg_widget(plugin.plugin.id);
 	}
+	death_signal = 1;
+	return 0;
+}
+
+static int lyricbar_stop() {
+	death_signal = 1;
+    gtkui_plugin = NULL;
 	return 0;
 }
 
@@ -110,8 +110,15 @@ static DB_misc_t plugin = {
 	.plugin.copyright = "Copyleft (C) 2015 AsVHEn\n",
 	.plugin.website = "https://github.com/asvhen/deadbeef-lyricbar",
 	.plugin.connect = lyricbar_connect,
+    .plugin.stop = lyricbar_stop,
 	.plugin.disconnect = lyricbar_disconnect,
-	.plugin.configdialog = settings_dlg,
-	.plugin.get_actions = lyricbar_get_actions
+	.plugin.get_actions = lyricbar_get_actions,
+	.plugin.configdialog =	"property \"Lyrics alignment type \" select[3] lyricbar.lyrics.alignment 1 left center right; \n"
+							"property \"Custom lyrics fetching command \" entry lyricbar.customcmd \"\"; \n"
+							"property \"Font scale \" hscale[0,10,0.01] lyricbar.fontscale 1; \n"
+							"property \"Highlight lyrics color (#XXXXXX HEX type. Restart needed) \" entry lyricbar.highlightcolor \"\"; \n"
+							"property \"Background color (#XXXXXX HEX type. Restart needed) \" entry lyricbar.backgroundcolor \"\"; \n"
+							"property \"Highlight lyrics position \" select[5] lyricbar.vpostion 1 top up center down bottom; \n"
+							"property \"Highlight lyrics Bold \" checkbox lyricbar.bold 1; \n"
 };
 
