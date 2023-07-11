@@ -1,9 +1,9 @@
-CFLAGS+=-std=c99 -Wall -O2 -D_GNU_SOURCE -fPIC -fvisibility=hidden -flto
-CXXFLAGS+=-std=c++14 -Wall -O2 -fPIC -fvisibility=hidden -flto
+CFLAGS+=-std=c99 -Wall -O2 -D_GNU_SOURCE -fPIC -fvisibility=hidden -flto=auto
+CXXFLAGS+=-std=c++14 -Wall -O2 -fPIC -fvisibility=hidden -flto=auto
 LIBFLAGS=`pkg-config --cflags $(GTKMM) $(GTK)`
 LIBS=`pkg-config --libs $(GTKMM) $(GTK)`
 LCURL=-lcurl
-LDFLAGS+=-flto
+LDFLAGS+=-flto=auto
 
 prefix ?= $(out)
 prefix ?= /usr

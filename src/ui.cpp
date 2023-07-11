@@ -2,6 +2,7 @@
 
 #include <memory>
 #include <vector>
+#include <regex>
 
 #include <glibmm/main.h>
 #include <gtkmm/main.h>
@@ -38,10 +39,14 @@ static RefPtr<TextTag> tagItalic, tagBold, tagLarge, tagCenter, tagSmall, tagFor
 static vector<RefPtr<TextTag>> tagsTitle, tagsArtist, tagsSyncline, tagsNosyncline, tagPadding;
 vector<RefPtr<TextTag>> tags;
 
-
 void button_clicked(TextView *lyricView, gpointer data) {
     
   g_print("clicked\n");
+}
+
+bool isValidHexaCode(string str){
+    regex hexaCode("^#([a-fA-F0-9]{6}|[a-fA-F0-9]{3})$");
+    return regex_match(str, hexaCode);
 }
 
 // "Size" lyrics to be able to make lines "dissapear" on top.
@@ -164,7 +169,12 @@ void get_tags() {
 	tagCenter->property_justification() = JUSTIFY_CENTER;
 
 	tagForegroundColor = refBuffer->create_tag();
-	tagForegroundColor->property_foreground() = deadbeef->conf_get_str_fast("lyricbar.highlightcolor", "#571c1c");
+	if (isValidHexaCode(deadbeef->conf_get_str_fast("lyricbar.highlightcolor", "#571c1c"))){
+		tagForegroundColor->property_foreground() = deadbeef->conf_get_str_fast("lyricbar.highlightcolor", "#571c1c");
+	}
+	else{
+		tagForegroundColor->property_foreground() = "#571c1c";
+	}
 
 	tagsTitle = {tagLarge, tagBold, tagCenter};
 	tagsArtist = {tagItalic, tagCenter};
@@ -238,7 +248,12 @@ GtkWidget *construct_lyricbar() {
 	std::string cssconfig("\
   		#lyricView text {\
   		background-color: ");
-	cssconfig.append(deadbeef->conf_get_str_fast("lyricbar.backgroundcolor", "#F6F6F6"));
+	if (isValidHexaCode(deadbeef->conf_get_str_fast("lyricbar.backgroundcolor", "#F6F6F6"))){
+		cssconfig.append(deadbeef->conf_get_str_fast("lyricbar.backgroundcolor", "#F6F6F6"));
+	}
+	else{
+		cssconfig.append("#F6F6F6");
+	}
 	cssconfig.append(";\
 		}\
 	");

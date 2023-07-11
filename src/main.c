@@ -107,7 +107,7 @@ static DB_misc_t plugin = {
 	.plugin.id = "lyricbar-gtk3",
 #endif
 	.plugin.descr = "Lyricbar plugin for DeadBeeF audio player.\nPlugin for DeaDBeeF audio player that fetches and shows the song’s with scroll on sync lyrics. \n",
-	.plugin.copyright = "Copyleft (C) 2015 AsVHEn\n",
+	.plugin.copyright = "Copyleft (C) 2023 AsVHEn\n",
 	.plugin.website = "https://github.com/asvhen/deadbeef-lyricbar",
 	.plugin.connect = lyricbar_connect,
     .plugin.stop = lyricbar_stop,
@@ -116,7 +116,7 @@ static DB_misc_t plugin = {
 	.plugin.configdialog =	"property \"Lyrics alignment type \" select[3] lyricbar.lyrics.alignment 1 left center right; \n"
 							"property \"Custom lyrics fetching command \" entry lyricbar.customcmd \"\"; \n"
 							"property \"Font scale \" hscale[0,10,0.01] lyricbar.fontscale 1; \n"
-							"property \"Highlight lyrics color (#XXXXXX HEX type. Restart needed) \" entry lyricbar.highlightcolor \"\"; \n"
+							"property \"Highlight lyrics color (#XXXXXX HEX type) \" entry lyricbar.highlightcolor \"\"; \n"
 							"property \"Background color (#XXXXXX HEX type. Restart needed) \" entry lyricbar.backgroundcolor \"\"; \n"
 							"property \"Highlight lyrics position \" select[5] lyricbar.vpostion 1 top up center down bottom; \n"
 							"property \"Highlight lyrics Bold \" checkbox lyricbar.bold 1; \n"
