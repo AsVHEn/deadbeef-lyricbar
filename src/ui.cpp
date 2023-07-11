@@ -29,13 +29,11 @@ struct linessizes{
 
 struct timespec tss = {0, 100000000};
 
-int width;
-
 // TODO: eliminate all the global objects, as their initialization is not well defined
 	
 static TextView *lyricView;
 static ScrolledWindow *lyricbar;
-static RefPtr<TextBuffer> refBuffer;
+static RefPtr<TextBuffer> refBuffer, refBuffercopy;
 static RefPtr<TextTag> tagItalic, tagBold, tagLarge, tagCenter, tagSmall, tagForegroundColor, tagLeftmargin, tagRightmargin, tagRegular;
 static vector<RefPtr<TextTag>> tagsTitle, tagsArtist, tagsSyncline, tagsNosyncline, tagPadding;
 vector<RefPtr<TextTag>> tags;
@@ -49,18 +47,31 @@ void button_clicked(TextView *lyricView, gpointer data) {
 // "Size" lyrics to be able to make lines "dissapear" on top.
 
 vector<int> sizelines(DB_playItem_t * track, Glib::ustring lyrics){
-	//std::cout << "Sizelines" << "\n";
-
 	set_lyrics(track, lyrics,"","","");
-	nanosleep(&tss, NULL);
+	refBuffercopy = refBuffer;
+
+//	std::cout << "Sizelines" << "\n";
+
+    int count = 0;
+	while (count + 4 != refBuffercopy->get_line_count()){
+		nanosleep(&tss, NULL);
+//		std::cout << "RefBuffercopy lines:" << refBuffercopy->get_line_count() << "\n";
+//		std::cout << "Lyrics lines:" << count << "\n";
+    	for (int i = 0; i < (int)(lyrics.length()); i++) {
+        	if (lyrics[i] == '\n') {
+        	    count++;
+	       	}
+    	}
+	}
+
 	int sumatory = 0;
 	int temporaly = 0;
 	vector<int>  values;
 	values.push_back(lyricbar->get_allocation().get_height()*(1 + deadbeef->conf_get_int("lyricbar.vpostion", 1))/6.0);
 	values.push_back(0);
 	Gdk::Rectangle rectangle;
-	for (int i = 2; i < refBuffer->get_line_count()-1; i++){
-		lyricView->get_iter_location(refBuffer->get_iter_at_line(i-2), rectangle);
+	for (int i = 2; i < refBuffercopy->get_line_count()-1; i++){
+		lyricView->get_iter_location(refBuffercopy->get_iter_at_line(i-2), rectangle);
 		values.push_back(rectangle.get_y() - temporaly);
 		temporaly = rectangle.get_y();
 	}
@@ -72,22 +83,20 @@ vector<int> sizelines(DB_playItem_t * track, Glib::ustring lyrics){
 			break;
 		}
 	}
-	//std::cout << "Sizelines finished" << "\n";
-	//nanosleep(&tss, NULL);
+//	std::cout << "Sizelines finished" << "\n";
 	return values;
 }
 
 void set_lyrics(DB_playItem_t *track, ustring past, ustring present, ustring future, ustring padding) {
 	signal_idle().connect_once([track, past, present, future, padding ] {
-		ustring artist, title;
-		{
-			pl_lock_guard guard;
+		pl_lock_guard guard;
 
-			if (!is_playing(track))
-				return;
-			artist = deadbeef->pl_find_meta(track, "artist") ?: _("Unknown Artist");
-			title  = deadbeef->pl_find_meta(track, "title") ?: _("Unknown Title");
+		if (!is_playing(track)){
+			return;
 		}
+		ustring artist, title;
+		artist = deadbeef->pl_find_meta(track, "artist") ?: _("Unknown Artist");
+		title  = deadbeef->pl_find_meta(track, "title") ?: _("Unknown Title");
 	
 		refBuffer->erase(refBuffer->begin(), refBuffer->end());
 		refBuffer->insert_with_tags(refBuffer->begin(), title, tagsTitle);
@@ -171,6 +180,16 @@ void get_tags() {
 		tagsNosyncline = {tagRegular};
     	}
 
+    if (get_justification() == JUSTIFY_LEFT) {
+    	lyricView->set_left_margin(5 + 15*deadbeef->conf_get_float("lyricbar.fontscale", 1));
+		tagRightmargin->property_right_margin() = 22*deadbeef->conf_get_float("lyricbar.fontscale", 1);
+		tagsNosyncline = {tagRegular, tagRightmargin};
+    }
+	if (get_justification() == JUSTIFY_RIGHT) {
+    	tagLeftmargin->property_left_margin() = 22*deadbeef->conf_get_float("lyricbar.fontscale", 1);
+		tagsNosyncline = {tagRegular, tagLeftmargin};
+    }
+
 	tagPadding = {tagSmall};
 }
 
@@ -227,12 +246,12 @@ GtkWidget *construct_lyricbar() {
 	//load css
 	auto data = g_strdup_printf(cssconfig.c_str());
 
-	//GtkWidget *menuuu;
+	//GtkWidget *menu;
 
 	//lyricView->signal_populate_popup().connect(button_clicked);
 
-	//menuuu = gtk_menu_item_new_with_label("Minimize");
-	//g_menu_append(NULL, "menuuu","menu");
+	//menu = gtk_menu_item_new_with_label("Minimize");
+	//g_menu_append(NULL, "menu","menu");
 	//g_signal_connect(lyricView,"signal_populate_popup()", G_CALLBACK(button_clicked), NULL);
 	//g_signal_connect(lyricView, "populate-popup", G_CALLBACK (button_clicked), NULL);
 

@@ -43,7 +43,7 @@ mutex mtx;
 
 int death_signal = 0;
 bool lyricstart = false;
-bool syncedfound = true;
+bool syncedfound = false;
 bool syncedlyrics = false;
 string str;
 float length;
@@ -581,24 +581,25 @@ void update_lyrics(void *tr) {
 		title  = deadbeef->pl_find_meta(track, "title");
 	}
 
+
+
 	if (artist && title) {
 		if (auto lyrics = load_cached_lyrics(artist, title)) {
-		if (syncedlyrics == true){
-			chopset_lyrics(track, *lyrics);
-		}
+			if (syncedlyrics == true){
+				chopset_lyrics(track, *lyrics);
+			}
 		else{
 			set_lyrics(track, "", "", *lyrics, "");
-		}
-			return;
+			}
+	return;
 	}
-
 		set_lyrics(track, "", "", _("Loading..."), "");
+		
 
-		// No lyrics in the tag or cache; try to get some and cache if succeeded
-
+		// No lyrics in the tag or cache; try to get some and cache if succeeded.
 
 		string artistnospecial = specialforspace(artist);
-		string titlenoespecial =  specialforspace(title);
+		string titlenoespecial = specialforspace(title);
 		string artistandtitle = artistnospecial + " - " + titlenoespecial;
 		string synclyrics = lyrics_dir + artistnospecial + " - " + titlenoespecial + ".lrc";
 		replace( artistnospecial.begin(), artistnospecial.end(), ' ', '+');
@@ -608,56 +609,99 @@ void update_lyrics(void *tr) {
 		get_page( url , lyrictxt);
 		ifstream syairraw(lyrictxt);
 		syair(syairraw, outsyair, artistandtitle);
+
 		if (syncedfound == true){
 			experimental::optional<ustring> lyrics = file_get_contents(synclyrics);
 			chopset_lyrics(track, *lyrics);
 			save_cached_lyrics(artist, title, *lyrics);
 			return;
 		}
-
 	}
 	ustring info = "";
     int count  = deadbeef->pl_find_meta_int(track, "PLAY_COUNTER", -1);
+	if (count == -1){
+		count  = deadbeef->pl_find_meta_int(track, "play_count", -1);
+	}
     const char *las  = deadbeef->pl_find_meta (track, "LAST_PLAYED");
     const char *firs  = deadbeef->pl_find_meta (track, "FIRST_PLAYED");
-	int bitrate = deadbeef->streamer_get_apx_bitrate();
 	int playcount = deadbeef->playqueue_get_count();
+	int bitrate = deadbeef->streamer_get_apx_bitrate();
+	while (bitrate == -1){
+		bitrate = deadbeef->streamer_get_apx_bitrate();
+	}
+
 
 	info.append("\n \n \n \n");
-
 
 	if (count == -1){
 		count = 0;
 	}
-
+	
 	if (count == 1){
-		info.append("Escuchado una vez \n \n \n");
+		if (std::strcmp(setlocale(LC_CTYPE, NULL) , "es_ES.UTF-8")== 0){
+			info.append("Escuchado una vez \n \n \n");
+		}
+		else{
+			info.append("Listened once \n \n \n");
+		}
 	}
 	else {
-		info.append("Escuchado ");
-		info.append(to_string(count));
-		info.append(" veces \n \n \n");
+		if (std::strcmp(setlocale(LC_CTYPE, NULL) , "es_ES.UTF-8")== 0){
+			info.append("Escuchado ");
+			info.append(to_string(count));
+			info.append(" veces \n \n \n");
+		}
+		else{
+			info.append("Listened ");
+			info.append(to_string(count));
+			info.append(" times \n \n \n");
+		}
+
 	}
 
 	if (firs != NULL) {
 		ustring first = firs;	
-		info.append("Por primera vez el ");
-		info.append(first.substr(0,10));
-		info.append("\n a las ");
-		info.append(first.substr(11, first.length() -1));
-		info.append("\n \n \n");
+		if (std::strcmp(setlocale(LC_CTYPE, NULL) , "es_ES.UTF-8")== 0){
+			info.append("Por primera vez el ");
+			info.append(first.substr(0,10));
+			info.append("\n a las ");
+			info.append(first.substr(11, first.length() -1));
+			info.append("\n \n \n");
+		}
+		else{
+			info.append("For the first time ");
+			info.append(first.substr(0,10));
+			info.append("\n at ");
+			info.append(first.substr(11, first.length() -1));
+			info.append("\n \n \n");
+		}
 	}
 	else{
-		info.append("No se ha escuchado previamente \n \n \n");
+		if (std::strcmp(setlocale(LC_CTYPE, NULL) , "es_ES.UTF-8")== 0){
+			info.append("No se ha escuchado previamente \n \n \n");
+		}
+		else{
+			info.append("Never listened before \n \n \n");
+		}
 	}
 
 	if (las != NULL) {
-		ustring last = las;
-		info.append("Por última vez el ");
-		info.append(last.substr(0,10));
-		info.append("\n a las ");
-		info.append( last.substr(11, last.length() -1));
-		info.append("\n \n \n");
+		if (std::strcmp(setlocale(LC_CTYPE, NULL) , "es_ES.UTF-8")== 0){
+			ustring last = las;
+			info.append("Por última vez el ");
+			info.append(last.substr(0,10));
+			info.append("\n a las ");
+			info.append( last.substr(11, last.length() -1));
+			info.append("\n \n \n");
+		}
+		else{
+			ustring last = las;
+			info.append("For the last time the");
+			info.append(last.substr(0,10));
+			info.append("\n at ");
+			info.append( last.substr(11, last.length() -1));
+			info.append("\n \n \n");
+		}
 	}
 
 
@@ -665,14 +709,25 @@ void update_lyrics(void *tr) {
 	info.append(to_string(bitrate));
 	info.append(" kbps\n \n \n");
 	if (playcount == 1){
-		info.append("Hay un archivo en cola\n \n \n");
+		if (std::strcmp(setlocale(LC_CTYPE, NULL) , "es_ES.UTF-8")== 0){
+			info.append("Hay un archivo en cola\n \n \n");
+		}
+		else{
+			info.append("There is one file in line \n \n \n");
+		}
 	}
 	else{
-	info.append("Hay ");
-	info.append(to_string(playcount));
-	info.append(" archivos en cola\n \n \n");
+		if (std::strcmp(setlocale(LC_CTYPE, NULL) , "es_ES.UTF-8")== 0){
+			info.append("Hay ");
+			info.append(to_string(playcount));
+			info.append(" archivos en cola\n \n \n");
+		}
+		else{
+			info.append("There are \n \n \n");
+			info.append(to_string(playcount));
+			info.append(" files in line\n \n \n");
+		}
 	}
-
 
 	set_lyrics(track, info, "",  "", "");
 }
