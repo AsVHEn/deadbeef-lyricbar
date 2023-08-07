@@ -16,7 +16,7 @@ Just download compiled file _ddb_lyricbar_gtk3.so_ and copy to ~/.local/lib/dead
 
 Clone this repository and perform the following:
 ```sh
-make [gtk2 or gtk3]
+make [gtk3]
 sudo cp *.so /usr/lib/deadbeef # depends on where deadbeef is installed
 # OR, to install for the current user only
 mkdir -p ~/.local/lib/deadbeef && cp *.so ~/.local/lib/deadbeef
