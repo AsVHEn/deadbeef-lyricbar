@@ -11,6 +11,10 @@ extern int death_signal;
 extern "C" {
 #endif
 
+typedef struct {
+    ddb_gtkui_widget_t base;
+} widget_lyricbar_t;
+
 extern DB_functions_t * deadbeef;
 
 #ifdef __cplusplus

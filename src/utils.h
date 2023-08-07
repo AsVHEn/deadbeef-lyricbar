@@ -15,6 +15,8 @@
 
 #include "main.h"
 
+using namespace std;
+
 struct pl_lock_guard {
 	pl_lock_guard() { deadbeef->pl_lock(); }
 	~pl_lock_guard() { deadbeef->pl_unlock(); }
@@ -25,16 +27,36 @@ struct id3v2_tag {
 	~id3v2_tag() { deadbeef->junk_id3v2_free(&tag); }
 };
 
-extern const DB_playItem_t *last;
+struct parsed_lyrics{
+	std::string lyrics;
+	bool sync;
+};
+
+string specialforplus(const char* text);
 
 bool is_playing(DB_playItem_t *track);
 
 void update_lyrics(void *tr);
 
-std::experimental::optional<Glib::ustring> download_lyrics_from_syair(DB_playItem_t *track);
-std::experimental::optional<Glib::ustring> get_lyrics_from_script(DB_playItem_t *track);
+struct parsed_lyrics get_lyrics_from_metadata(DB_playItem_t *track);
+
+void save_meta_data(DB_playItem_t *playing_song, struct parsed_lyrics lyrics);
+
+experimental::optional<Glib::ustring> download_lyrics_from_syair(DB_playItem_t *track);
+
+experimental::optional<Glib::ustring> get_lyrics_from_script(DB_playItem_t *track);
 
 int mkpath(const std::string &name, mode_t mode);
+
+string replace_string(std::string subject, const std::string& search, const std::string& replace);
+
+vector<string> split(string s, string delimiter);
+
+size_t WriteCallback(void *contents, size_t size, size_t nmemb, void *userp);
+
+string text_downloader(curl_slist *slist, string url);
+
+vector<string> spotify_get_songs(string song,string artist);
 
 extern "C" {
 #endif // __cplusplus

@@ -15,12 +15,12 @@ using namespace std;
 bool isValidHexaCode(string str);
 
 void set_lyrics(DB_playItem_t * track, Glib::ustring past, Glib::ustring present, Glib::ustring future, Glib::ustring padding);
-void set_prelyrics(DB_playItem_t * track, Glib::ustring past, Glib::ustring present, Glib::ustring future, Glib::ustring padding);
 
 void sync_or_unsync(bool syncedlyrics);
 
 vector<int> sizelines(DB_playItem_t * track, Glib::ustring lyrics);
 
+void get_tags();
 
 extern "C" {
 #endif

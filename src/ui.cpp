@@ -28,67 +28,56 @@ struct linessizes{
 	int newlinesize;
 };
 
+const DB_playItem_t *last;
+
 struct timespec tss = {0, 100000000};
 
 // TODO: eliminate all the global objects, as their initialization is not well defined
 	
 static TextView *lyricView;
 static ScrolledWindow *lyricbar;
-static RefPtr<TextBuffer> refBuffer, refBuffercopy;
-static RefPtr<TextTag> tagItalic, tagBold, tagLarge, tagCenter, tagSmall, tagForegroundColor, tagLeftmargin, tagRightmargin, tagRegular;
+static RefPtr<TextBuffer> refBuffer;
+static RefPtr<TextTag> tagItalic, tagBold, tagLarge, tagCenter, tagSmall, tagForegroundColorHighlight,tagForegroundColorRegular, tagLeftmargin, tagRightmargin, tagRegular;
 static vector<RefPtr<TextTag>> tagsTitle, tagsArtist, tagsSyncline, tagsNosyncline, tagPadding;
-vector<RefPtr<TextTag>> tags;
 
-void button_clicked(TextView *lyricView, gpointer data) {
-    
-  g_print("clicked\n");
-}
-
-bool isValidHexaCode(string str){
+bool isValidHexaCode(string str) {
     regex hexaCode("^#([a-fA-F0-9]{6}|[a-fA-F0-9]{3})$");
     return regex_match(str, hexaCode);
 }
 
 // "Size" lyrics to be able to make lines "dissapear" on top.
-
-vector<int> sizelines(DB_playItem_t * track, Glib::ustring lyrics){
+vector<int> sizelines(DB_playItem_t * track, Glib::ustring lyrics) {
 	set_lyrics(track, lyrics,"","","");
-	refBuffercopy = refBuffer;
-
 //	std::cout << "Sizelines" << "\n";
-
-    int count = 0;
-	while (count + 4 != refBuffercopy->get_line_count()){
-		nanosleep(&tss, NULL);
-//		std::cout << "RefBuffercopy lines:" << refBuffercopy->get_line_count() << "\n";
-//		std::cout << "Lyrics lines:" << count << "\n";
-    	for (int i = 0; i < (int)(lyrics.length()); i++) {
-        	if (lyrics[i] == '\n') {
-        	    count++;
-	       	}
-    	}
-	}
-
+	death_signal = 1;
 	int sumatory = 0;
 	int temporaly = 0;
 	vector<int>  values;
-	values.push_back(lyricbar->get_allocation().get_height()*(1 + deadbeef->conf_get_int("lyricbar.vpostion", 1))/6.0);
+
+//	I didn't found another way to be sure lyrics are displayed than wait millisenconds with nanosleep.
+	nanosleep(&tss, NULL);
+	pl_lock_guard guard;
+	values.push_back(lyricbar->get_allocation().get_height()*(deadbeef->conf_get_int("lyricbar.vpostion", 50))/100);
 	values.push_back(0);
 	Gdk::Rectangle rectangle;
-	for (int i = 2; i < refBuffercopy->get_line_count()-1; i++){
-		lyricView->get_iter_location(refBuffercopy->get_iter_at_line(i-2), rectangle);
+	for (int i = 2; i < refBuffer->get_line_count()-1; i++) {
+		lyricView->get_iter_location(refBuffer->get_iter_at_line(i-2), rectangle);
 		values.push_back(rectangle.get_y() - temporaly);
 		temporaly = rectangle.get_y();
 	}
+
 	values[1] = values.size()-3;
-	for (unsigned i = 2; i < values.size()-2; i++){
+
+	for (unsigned i = 2; i < values.size()-2; i++) {
 		sumatory += values[i];
-		if (sumatory > (values[0] - values[3] - values[4])){
+		if (sumatory > (values[0] - values[3] - values[4])) {
 			values[1] = i-2;
 			break;
 		}
 	}
 //	std::cout << "Sizelines finished" << "\n";
+	death_signal = 0;
+
 	return values;
 }
 
@@ -96,7 +85,7 @@ void set_lyrics(DB_playItem_t *track, ustring past, ustring present, ustring fut
 	signal_idle().connect_once([track, past, present, future, padding ] {
 		pl_lock_guard guard;
 
-		if (!is_playing(track)){
+		if (!is_playing(track)) {
 			return;
 		}
 		ustring artist, title;
@@ -104,10 +93,9 @@ void set_lyrics(DB_playItem_t *track, ustring past, ustring present, ustring fut
 		title  = deadbeef->pl_find_meta(track, "title") ?: _("Unknown Title");
 	
 		refBuffer->erase(refBuffer->begin(), refBuffer->end());
+
 		refBuffer->insert_with_tags(refBuffer->begin(), title, tagsTitle);
 		refBuffer->insert_with_tags(refBuffer->end(), ustring{"\n"} + artist + "\n\n", tagsArtist);
-	
-		vector<RefPtr<TextTag>> tags;
 		refBuffer->insert_with_tags(refBuffer->end(), padding, tagPadding);
 		refBuffer->insert_with_tags(refBuffer->end(),past, tagsNosyncline);
 		refBuffer->insert_with_tags(refBuffer->end(),present, tagsSyncline);
@@ -115,12 +103,12 @@ void set_lyrics(DB_playItem_t *track, ustring past, ustring present, ustring fut
 
 		refBuffer->insert_with_tags(refBuffer->end(),future, tagsNosyncline);
 
-		last = track;
 	});
 }
 
-void sync_or_unsync(bool syncedlyrics){
-	if (syncedlyrics == true){
+// To have scroll bars or not when lyrics are synced or not.
+void sync_or_unsync(bool syncedlyrics) {
+	if (syncedlyrics == true) {
 		lyricbar->set_policy(POLICY_EXTERNAL, POLICY_EXTERNAL);
 	}
 	else{
@@ -141,7 +129,7 @@ Justification get_justification() {
 	}
 }
 
-void get_tags() {
+	void get_tags() {
 	tagItalic = refBuffer->create_tag();
 	tagItalic->property_style() = Pango::STYLE_ITALIC;
 	tagItalic->property_scale() = deadbeef->conf_get_float("lyricbar.fontscale", 1);
@@ -150,10 +138,10 @@ void get_tags() {
 	tagRegular->property_scale() = deadbeef->conf_get_float("lyricbar.fontscale", 1);
 
 	tagLeftmargin = refBuffer->create_tag();
-	tagLeftmargin->property_left_margin() = 22*deadbeef->conf_get_float("lyricbar.fontscale", 1);
+	tagLeftmargin->property_left_margin() = deadbeef->conf_get_float("lyricbar.border", 22)*deadbeef->conf_get_float("lyricbar.fontscale", 1);
 
 	tagRightmargin = refBuffer->create_tag();
-	tagRightmargin->property_right_margin() = 22*deadbeef->conf_get_float("lyricbar.fontscale", 1);
+	tagRightmargin->property_right_margin() = deadbeef->conf_get_float("lyricbar.border", 22)*deadbeef->conf_get_float("lyricbar.fontscale", 1);
 
 	tagBold = refBuffer->create_tag();
 	tagBold->property_scale() = deadbeef->conf_get_float("lyricbar.fontscale", 1);
@@ -168,35 +156,44 @@ void get_tags() {
 	tagCenter = refBuffer->create_tag();
 	tagCenter->property_justification() = JUSTIFY_CENTER;
 
-	tagForegroundColor = refBuffer->create_tag();
+	tagForegroundColorHighlight = refBuffer->create_tag();
+	tagForegroundColorRegular = refBuffer->create_tag();
+
 	if (isValidHexaCode(deadbeef->conf_get_str_fast("lyricbar.highlightcolor", "#571c1c"))){
-		tagForegroundColor->property_foreground() = deadbeef->conf_get_str_fast("lyricbar.highlightcolor", "#571c1c");
+		tagForegroundColorHighlight->property_foreground() = deadbeef->conf_get_str_fast("lyricbar.highlightcolor", "#571c1c");
 	}
 	else{
-		tagForegroundColor->property_foreground() = "#571c1c";
+		tagForegroundColorHighlight->property_foreground() = "#571c1c";
 	}
+
+	if (isValidHexaCode(deadbeef->conf_get_str_fast("lyricbar.regularcolor", "#000000"))){
+		tagForegroundColorRegular->property_foreground() = deadbeef->conf_get_str_fast("lyricbar.regularcolor", "#000000");
+	}
+	else{
+		tagForegroundColorRegular->property_foreground() = "#000000";
+	}
+
 
 	tagsTitle = {tagLarge, tagBold, tagCenter};
 	tagsArtist = {tagItalic, tagCenter};
 
-	tagsSyncline = {tagBold, tagForegroundColor};
+	tagsSyncline = {tagBold, tagForegroundColorHighlight};
 
 	if (deadbeef->conf_get_int("lyricbar.bold", 1) == 1) {
-		tagsSyncline = {tagBold, tagForegroundColor};
-		tagsNosyncline = {tagRegular, tagLeftmargin, tagRightmargin};
+		tagsSyncline = {tagBold, tagForegroundColorHighlight};
+		tagsNosyncline = {tagRegular, tagLeftmargin, tagRightmargin, tagForegroundColorRegular};
 	}
 	else{
-		tagsSyncline = {tagRegular, tagForegroundColor};
-		tagsNosyncline = {tagRegular};
+		tagsSyncline = {tagRegular, tagForegroundColorHighlight};
+		tagsNosyncline = {tagRegular, tagForegroundColorRegular};
     	}
 
     if (get_justification() == JUSTIFY_LEFT) {
-    	lyricView->set_left_margin(5 + 15*deadbeef->conf_get_float("lyricbar.fontscale", 1));
-		tagRightmargin->property_right_margin() = 22*deadbeef->conf_get_float("lyricbar.fontscale", 1);
+		tagRightmargin->property_right_margin() = deadbeef->conf_get_float("lyricbar.border", 22)*deadbeef->conf_get_float("lyricbar.fontscale", 1);
 		tagsNosyncline = {tagRegular, tagRightmargin};
     }
 	if (get_justification() == JUSTIFY_RIGHT) {
-    	tagLeftmargin->property_left_margin() = 22*deadbeef->conf_get_float("lyricbar.fontscale", 1);
+    	tagLeftmargin->property_left_margin() = deadbeef->conf_get_float("lyricbar.border", 22)*deadbeef->conf_get_float("lyricbar.fontscale", 1);
 		tagsNosyncline = {tagRegular, tagLeftmargin};
     }
 
@@ -206,18 +203,14 @@ void get_tags() {
 extern "C"
 
 GtkWidget *construct_lyricbar() {
-
 	Gtk::Main::init_gtkmm_internals();
 	refBuffer = TextBuffer::create();
 	get_tags();
-
 	lyricView = new TextView(refBuffer);
-
 	lyricView->set_editable(false);
 	lyricView->set_can_focus(false);
 	lyricView->set_name("lyricView");
 	lyricView->set_left_margin(2);
-	//lyricView->set_activatable(false);
 	lyricView->set_right_margin(2);
 	lyricView->set_justification(get_justification());
     	lyricView->get_vadjustment()->set_value(1000);
@@ -228,19 +221,9 @@ GtkWidget *construct_lyricbar() {
 	lyricView->show();
 	lyricbar = new ScrolledWindow();
 	lyricbar->add(*lyricView);
+	lyricbar->set_name("lyricbar");
 	lyricbar->set_policy(POLICY_EXTERNAL, POLICY_EXTERNAL);
-	//lyricbar->set_policy(POLICY_AUTOMATIC, POLICY_AUTOMATIC);
 
-
-//	Gtk::MenuItem menuFiles;
-//	menuFiles.set_label("Files");
-//	GtkMenu* menu = GTK_MENU(lyricView);
-//	GTK_MENU(lyricView)->popup();
-//	menu->attach(menuFiles);
-//	lyricView->signal_populate_popup().connect(GTK_MENU(lyricView));
-//	lyricView->set_monospace();
-//	std::cout << lyricView->get_input_hints() << "\n";
-//	lyricView->set_extra_menu();
 
 	/**********/
 
@@ -260,21 +243,6 @@ GtkWidget *construct_lyricbar() {
 
 	//load css
 	auto data = g_strdup_printf(cssconfig.c_str());
-
-	//GtkWidget *menu;
-
-	//lyricView->signal_populate_popup().connect(button_clicked);
-
-	//menu = gtk_menu_item_new_with_label("Minimize");
-	//g_menu_append(NULL, "menu","menu");
-	//g_signal_connect(lyricView,"signal_populate_popup()", G_CALLBACK(button_clicked), NULL);
-	//g_signal_connect(lyricView, "populate-popup", G_CALLBACK (button_clicked), NULL);
-
-	//lyricView->signal_populate_popup().connect(sigc::ptr_fun(button_clicked));
-
-
-	//std::cout << lyricView->property_populate_all() << "\n";
-
 
 	Glib::RefPtr<Gtk::CssProvider> cssProvider = Gtk::CssProvider::create();
 	cssProvider->load_from_data(data);
@@ -297,7 +265,6 @@ GtkWidget *construct_lyricbar() {
 extern "C"
 int message_handler(struct ddb_gtkui_widget_s*, uint32_t id, uintptr_t ctx, uint32_t, uint32_t) {
 	auto event = reinterpret_cast<ddb_event_track_t *>(ctx);
-
 	switch (id) {
 		case DB_EV_CONFIGCHANGED:
 			debug_out << "CONFIG CHANGED\n";
@@ -315,12 +282,11 @@ int message_handler(struct ddb_gtkui_widget_s*, uint32_t id, uintptr_t ctx, uint
 		case DB_EV_SONGSTARTED:
 			debug_out << "SONG STARTED\n";
 			if (!event->track || event->track == last || deadbeef->pl_get_item_duration(event->track) <= 0.0){
-				//std::cout << "if in" << "\n";
+//				std::cout << "if in" << "\n";
 				return 0;
 			}
-			//std::cout << "SONG STARTED" << "\n";
-			//std::cout << "LAST: " << last << "\n";
-			//std::cout << "TRACK: " << event->track << "\n";
+			last = event->track;
+//			std::cout << "SONG STARTED" << "\n";
 			auto tid = deadbeef->thread_start(update_lyrics, event->track);
 			deadbeef->thread_detach(tid);
 			break;
@@ -334,6 +300,7 @@ void lyricbar_destroy() {
 	delete lyricbar;
 	delete lyricView;
 	tagsArtist.clear();
+	tagPadding.clear();
 	tagsSyncline.clear();
 	tagsNosyncline.clear();
 	tagRegular.clear();

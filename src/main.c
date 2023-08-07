@@ -4,14 +4,64 @@
 #include <stdlib.h>
 
 #include "ui.h"
+#include "lrcspotify.h"
 #include "utils.h"
 #include "gettext.h"
+#include "config_dialog.h"
+
+#include <gtk/gtk.h>
+#include <deadbeef/gtkui_api.h>
+#include <stdint.h>
+
 
 static ddb_gtkui_t *gtkui_plugin;
 DB_functions_t *deadbeef;
 
-static DB_misc_t plugin;
+static gboolean _pop (GtkTextView *text_view, GtkWidget *popup, gpointer user_data) {
+	GtkWidget *popup_config;
+	GtkWidget *popup_search;
+	GtkWidget *popup_edit;
 
+	if (strcmp(setlocale(LC_CTYPE, NULL) , "es_ES.UTF-8") == 0) {
+		popup_config = gtk_menu_item_new_with_label("Configurar");
+		popup_search = gtk_menu_item_new_with_label("Buscar");
+		popup_edit = gtk_menu_item_new_with_label("Editar");
+	}
+	else {
+		popup_config = gtk_menu_item_new_with_label("Config");
+		popup_search = gtk_menu_item_new_with_label("Search");
+		popup_edit = gtk_menu_item_new_with_label("Edit");	
+	}
+
+	GList *children = gtk_container_get_children(GTK_CONTAINER(popup));
+	gtk_container_remove(GTK_CONTAINER(popup),children->data);
+	while ((children = g_list_next(children)) != NULL) {
+//		printf("%s \n",gtk_menu_item_get_label(children->data));
+		gtk_container_remove(GTK_CONTAINER(popup),children->data);
+	}
+	gtk_menu_attach(GTK_MENU(popup),popup_config,0,1,0,1);
+	gtk_menu_attach(GTK_MENU(popup),popup_search,0,1,1,2);
+	gtk_menu_attach(GTK_MENU(popup),popup_edit,0,1,2,3);
+
+	gtk_widget_show(popup_config);
+	gtk_widget_show(popup_search);
+	gtk_widget_show(popup_edit);
+	DB_playItem_t *track = deadbeef->streamer_get_playing_track();
+	if (track) {
+		deadbeef->pl_item_unref(track);
+	}
+	else {
+		gtk_widget_set_sensitive (popup_edit,FALSE);
+		gtk_widget_set_sensitive (popup_search,FALSE);
+	}
+	
+	g_signal_connect_after(popup_config, "activate", G_CALLBACK(on_button_config), user_data);
+	g_signal_connect_after(popup_search, "activate", G_CALLBACK(on_button_search), user_data);
+	g_signal_connect_after(popup_edit, "activate", G_CALLBACK(on_button_edit), user_data);	
+    return TRUE;
+}
+
+static DB_misc_t plugin;
 
 static int lyricbar_disconnect() {
 	if (gtkui_plugin) {
@@ -35,12 +85,12 @@ DB_plugin_action_t remove_action = {
 	.title = "Remove Lyrics From Cache"
 };
 
-static DB_plugin_action_t *
-lyricbar_get_actions() {
+static DB_plugin_action_t *lyricbar_get_actions() {
 	deadbeef->pl_lock();
 	remove_action.flags |= DB_ACTION_DISABLED;
 	DB_playItem_t *current = deadbeef->pl_get_first(PL_MAIN);
 	while (current) {
+		deadbeef->pl_lock();
 		if (deadbeef->pl_is_selected(current) && is_cached(
 		            deadbeef->pl_find_meta(current, "artist"),
 		            deadbeef->pl_find_meta(current, "title"))) {
@@ -48,6 +98,7 @@ lyricbar_get_actions() {
 			deadbeef->pl_item_unref(current);
 			break;
 		}
+		deadbeef->pl_unlock();
 		DB_playItem_t *next = deadbeef->pl_get_next(current, PL_MAIN);
 		deadbeef->pl_item_unref(current);
 		current = next;
@@ -56,16 +107,17 @@ lyricbar_get_actions() {
 	return &remove_action;
 }
 
-static ddb_gtkui_widget_t*
-w_lyricbar_create(void) {
-	ddb_gtkui_widget_t *widget = malloc(sizeof(ddb_gtkui_widget_t));
-	memset(widget, 0, sizeof(ddb_gtkui_widget_t));
+static ddb_gtkui_widget_t*w_lyricbar_create(void) {
+	widget_lyricbar_t *widget = malloc(sizeof(widget_lyricbar_t));
+	memset(widget, 0, sizeof(widget_lyricbar_t));
 
-	widget->widget  = construct_lyricbar();
-	widget->destroy = lyricbar_destroy;
-	widget->message = message_handler;
+	widget->base.widget  = construct_lyricbar();
+	widget->base.destroy = lyricbar_destroy;
+	widget->base.message = message_handler;
+	GList *children = gtk_container_get_children(GTK_CONTAINER(widget->base.widget));
+	gtkui_plugin->w_override_signals(widget->base.widget, widget);
+	g_signal_connect(children->data, "populate_popup", G_CALLBACK (_pop), children->data);
 
-	gtkui_plugin->w_override_signals(widget->widget, widget);
 	return widget;
 }
 
@@ -113,12 +165,7 @@ static DB_misc_t plugin = {
     .plugin.stop = lyricbar_stop,
 	.plugin.disconnect = lyricbar_disconnect,
 	.plugin.get_actions = lyricbar_get_actions,
-	.plugin.configdialog =	"property \"Lyrics alignment type \" select[3] lyricbar.lyrics.alignment 1 left center right; \n"
-							"property \"Custom lyrics fetching command \" entry lyricbar.customcmd \"\"; \n"
-							"property \"Font scale \" hscale[0,10,0.01] lyricbar.fontscale 1; \n"
-							"property \"Highlight lyrics color (#XXXXXX HEX type) \" entry lyricbar.highlightcolor \"\"; \n"
-							"property \"Background color (#XXXXXX HEX type. Restart needed) \" entry lyricbar.backgroundcolor \"\"; \n"
-							"property \"Highlight lyrics position \" select[5] lyricbar.vpostion 1 top up center down bottom; \n"
-							"property \"Highlight lyrics Bold \" checkbox lyricbar.bold 1; \n"
+	.plugin.configdialog =	"property \"Font scale \" hscale[0,10,0.01] lyricbar.fontscale 1; \n"
+							"property \"SP-DC cookie \" entry lyricbar.sp_dc_cookie \"\"; \n"
 };
 
