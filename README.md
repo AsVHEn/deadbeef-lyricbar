@@ -39,6 +39,5 @@ Same to use AZlyrics with the last part of a manual search URL.
 There is also a window to edit lyrics.
 ![Edit](https://github.com/AsVHEn/deadbeef-lyricbar/assets/4272271/85eed130-f9bb-44f9-83de-8a74f9f5aad3)
 
+
 In addition, if you're not satisfied with lyrics providers you can help adding another ones :D.
-
-
