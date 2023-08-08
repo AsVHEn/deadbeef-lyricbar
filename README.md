@@ -32,10 +32,10 @@ Lyrics will be stored on tags "LYRICS" for synced, and "UNSYNCEDLYRICS" for non-
 
 Automatic download if no tag or file is found. Also you can manually search for lyrics with a right-click on plugin. To be able to get lyrics from Spoti-fy you will need to input your account's SP-DC on Edit/Preferences/Plugins/Lyricbar.
 Same to use AZlyrics with the last part of a manual search URL.
-![Search](https://github.com/AsVHEn/deadbeef-lyricbar/assets/4272271/cc7e38c9-8046-423f-ab2b-aebd957fd8be)
+![Search](https://github.com/AsVHEn/deadbeef-lyricbar/assets/4272271/03b1ade0-11da-4c69-b85b-cb3f26ed8b65)
 
 There is also a window to edit lyrics.
-![Edit](https://github.com/AsVHEn/deadbeef-lyricbar/assets/4272271/85eed130-f9bb-44f9-83de-8a74f9f5aad3)
+![Edit](https://github.com/AsVHEn/deadbeef-lyricbar/assets/4272271/5e2c30b6-e21b-483e-abe6-c0d12ed13d84)
 
 In addition, if you're not satisfied with lyrics providers you can help adding another ones :D.
 
