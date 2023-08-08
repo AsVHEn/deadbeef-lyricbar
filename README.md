@@ -25,7 +25,8 @@ mkdir -p ~/.local/lib/deadbeef && cp *.so *.glade ~/.local/lib/deadbeef
 
 ## Usage
 Activate Design Mode (View → Design mode) and add Lyricbar somewhere. Disable Design Mode back and edit appareance if you want in config options:
-![Options](https://github.com/AsVHEn/deadbeef-lyricbar/assets/4272271/a4fe1043-3b8c-417d-877f-06826bb2eb71)
+
+![Config](https://github.com/AsVHEn/deadbeef-lyricbar/assets/4272271/5cbf1cba-9eff-4694-ad34-d814b8abe84f)
 
 Lyrics will be stored on tags "LYRICS" for synced, and "UNSYNCEDLYRICS" for non-sync. SYLT tags will be removed if exists.
 
