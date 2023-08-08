@@ -1,7 +1,7 @@
 Based on loskutov https://github.com/loskutov/deadbeef-lyricbar
 
 Example:
-![GIF](https://github.com/AsVHEn/deadbeef-lyricbar/assets/4272271/2506a8cb-2c94-4a73-99c7-33b7aa22e26e
+![GIF](https://github.com/AsVHEn/deadbeef-lyricbar/assets/4272271/2506a8cb-2c94-4a73-99c7-33b7aa22e26e)
 
 # DeaDBeeF Lyricbar Plugin
 Plugin for DeaDBeeF audio player that fetches and shows the song’s synclyrics using various website, also from metadata or lrc/txt file (same name on same folder as track).
@@ -38,5 +38,6 @@ Same to use AZlyrics with the last part of a manual search URL.
 
 There is also a window to edit lyrics.
 ![Edit](https://github.com/AsVHEn/deadbeef-lyricbar/assets/4272271/85eed130-f9bb-44f9-83de-8a74f9f5aad3)
+
 
 In addition, if you're not satisfied with lyrics providers you can help adding another ones :D.
