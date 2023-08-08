@@ -3,7 +3,7 @@ Based on loskutov https://github.com/loskutov/deadbeef-lyricbar
 # DeaDBeeF Lyricbar Plugin
 Plugin for DeaDBeeF audio player that fetches and shows the song’s synclyrics using various website, also from metadata or lrc/txt file (same name on same folder as track).
 
-![GIF](https://github.com/AsVHEn/deadbeef-lyricbar/assets/4272271/2506a8cb-2c94-4a73-99c7-33b7aa22e26e
+![GIF](https://github.com/AsVHEn/deadbeef-lyricbar/assets/4272271/2506a8cb-2c94-4a73-99c7-33b7aa22e26e)
 
 
 ## Dependencies
