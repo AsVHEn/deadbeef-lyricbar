@@ -107,7 +107,7 @@ static DB_plugin_action_t *lyricbar_get_actions() {
 	return &remove_action;
 }
 
-static ddb_gtkui_widget_t*w_lyricbar_create(void) {
+static ddb_gtkui_widget_t *w_lyricbar_create(void) {
 	widget_lyricbar_t *widget = malloc(sizeof(widget_lyricbar_t));
 	memset(widget, 0, sizeof(widget_lyricbar_t));
 
@@ -165,7 +165,8 @@ static DB_misc_t plugin = {
     .plugin.stop = lyricbar_stop,
 	.plugin.disconnect = lyricbar_disconnect,
 	.plugin.get_actions = lyricbar_get_actions,
-	.plugin.configdialog =	"property \"Font scale \" hscale[0,10,0.01] lyricbar.fontscale 1; \n"
-							"property \"SP-DC cookie \" entry lyricbar.sp_dc_cookie \"\"; \n"
+	.plugin.configdialog =	"property \"Font scale: \" hscale[0,10,0.01] lyricbar.fontscale 1; \n"
+							"property \"End url search (AZlyrics) (&x=...): \" entry lyricbar.end_url_search \"\"; \n"
+							"property \"SP-DC cookie (Spotify): \" entry lyricbar.sp_dc_cookie \"\"; \n"
 };
 

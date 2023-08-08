@@ -1,34 +1,26 @@
-#include <sys/stat.h>
-#include <curl/curl.h>
-
-#include <algorithm>
-#include <cassert>
-#include <cctype> // ::isspace
-#include <cstring>
-#include <fstream>
-#include <iostream>
-#include <regex>
-#include <sstream>
-#include <stdexcept>
-#include <thread>
-#include <pthread.h>
-#include <mutex>
-
-#include <giomm.h>
-#include <glibmm/fileutils.h>
-#include <glibmm/uriutils.h>
-
 #include "utils.h"
 #include "debug.h"
 #include "gettext.h"
 #include "lrcspotify.h"
 #include "ui.h"
 
+#include <sys/stat.h>
+#include <fstream>
+#include <iostream>
+#include <thread>
+#include <vector>
+#include <string>
+#include <pthread.h>
+#include <mutex>
+
+
 using namespace std;
-using namespace Glib;
+
+//Global variables:
 
 static const char *home_cache = getenv("XDG_CACHE_HOME");
 static const string lyrics_dir = (home_cache ? string(home_cache) : string(getenv("HOME")) + "/.cache") + "/deadbeef/lyrics/";
+
 
 
 mutex mtx;
@@ -40,77 +32,9 @@ bool syncedlyrics = false;
 vector<int> linessizes;
 
 
-struct sync{
-	vector<ustring> synclyrics;
-	vector<double> position;
-};
-
-
 struct sync lrc;
 
-struct chopped{
-	ustring past;
-	ustring present;
-	ustring future;
-};
-
 struct timespec ts = {0, 50000000};
-
-
-
-
-//	Function to save lyrics to tag.
-
-void save_meta_data(DB_playItem_t *playing_song, struct parsed_lyrics lyrics){
-
-	deadbeef->pl_lock();
-	const char *SYLT = deadbeef->pl_find_meta(playing_song, "SYLT");
-	const char *LYRICS = deadbeef->pl_find_meta(playing_song, "LYRICS");
-	const char *UNSYNCEDLYRICS = deadbeef->pl_find_meta(playing_song, "UNSYNCEDLYRICS");
-	deadbeef->pl_unlock();
-	if (lyrics.sync == true){	
-		if (SYLT){
-			deadbeef->pl_delete_meta(playing_song, "SYLT");
-		}
-
-		if (LYRICS){
-			deadbeef->pl_delete_meta(playing_song, "LYRICS");
-		}
-		deadbeef->pl_add_meta(playing_song, "LYRICS", lyrics.lyrics.c_str());	
-	}
-	else{
-		if (UNSYNCEDLYRICS){
-			deadbeef->pl_delete_meta(playing_song, "UNSYNCEDLYRICS");
-		}
-		deadbeef->pl_add_meta(playing_song, "UNSYNCEDLYRICS", lyrics.lyrics.c_str());	
-	}
-	deadbeef->pl_lock(); 
-	const char *dec = deadbeef->pl_find_meta_raw(playing_song, ":DECODER"); 
-	char decoder_id[100];
-
-	if (dec){
-		strncpy(decoder_id, dec, sizeof(decoder_id));
-	}
-	int match = playing_song && dec;
-	deadbeef->pl_unlock();
-
-	if (match){
-		DB_decoder_t *dec = NULL;
-		DB_decoder_t **decoders = deadbeef->plug_get_decoder_list();
-
-		for (int i = 0; decoders[i]; i++){
-
-			if (!strcmp(decoders[i]->plugin.id, decoder_id)){
-				dec = decoders[i];
-
-				if (dec->write_metadata) {
-					dec->write_metadata(playing_song);
-				}
-				break;
-			}
-		}
-	}
-}
 
 // For debug:
 
@@ -129,8 +53,11 @@ bool is_playing(DB_playItem_t *track) {
 	}
 }
 
-// Functions to bubble sort lyrics and timestamps.
+//---------------------------------------------------------------------
+//************ Functions to make scroll on sync lyrics. ***************
+//---------------------------------------------------------------------
 
+// Functions to bubble sort lyrics and timestamps.
 void swap(double *xp, double *yp)
 {
     double temp = *xp;
@@ -138,18 +65,19 @@ void swap(double *xp, double *yp)
     *yp = temp;
 }
 
-void swaptext(ustring *xp, ustring *yp)
+void swaptext(string *xp, string *yp)
 {
-    ustring temp = *xp;
+    string temp = *xp;
     *xp = *yp;
     *yp = temp;
 }
- 
-struct sync bubbleSort(vector<double> arr, vector<ustring> text ,  int n)
+
+// Fuctions to order lyrics and timestamps.
+struct sync bubbleSort(vector<double> arr, vector<string> text ,  int n)
 {
 	if ((arr.size() == 0) || (text.size() != arr.size())){
 		vector<double> nullposition;
-		vector<ustring> errortext;
+		vector<string> errortext;
 		nullposition.push_back(0);
 		errortext.push_back("Error with lyrics file or metadata");
 		cout << "Error with lyrics file or metadata \n";
@@ -173,11 +101,11 @@ struct sync bubbleSort(vector<double> arr, vector<ustring> text ,  int n)
 }
 
 // Function to parse synced lyrics:
-struct sync lyric2vector( ustring lyrics){
+struct sync lyric2vector( string lyrics){
 	//cout << "lyric2vector" "\n";
-	vector<ustring> synclyrics;
+	vector<string> synclyrics;
 	vector<double> position;
-	ustring line;
+	string line;
 	int squarebracket;
 	int repeats = 0; 
 	//If last character is a ] add an space to have same number of lyrics and positions.
@@ -228,10 +156,10 @@ struct sync lyric2vector( ustring lyrics){
 // Function to scroll and remark line:
 void write_synced( DB_playItem_t *it){
 	float pos = deadbeef->streamer_get_playpos();
-	ustring past = "";
-	ustring present = "";
-	ustring future = "";
-	ustring padding = "";
+	string past = "";
+	string present = "";
+	string future = "";
+	string padding = "";
 	int presentpos = 0;
 	int minimuntopad = 0;
 
@@ -295,7 +223,7 @@ void thread_listener(DB_playItem_t *track){
 }
 
 // Main loop thread caller.
-void chopset_lyrics(DB_playItem_t *track, ustring lyrics){
+void chopset_lyrics(DB_playItem_t *track, string lyrics){
 //	cout << "Chopset lyrics" "\n";
 	lrc = lyric2vector(lyrics);
 	DB_playItem_t *it = deadbeef->streamer_get_playing_track();
@@ -305,7 +233,7 @@ void chopset_lyrics(DB_playItem_t *track, ustring lyrics){
 	lrc.position.push_back((float)length);
 	lrc.synclyrics.push_back("\n");
 	lrc.synclyrics.push_back("\n");
-	ustring prelyrics = "";
+	string prelyrics = "";
 	for (unsigned i = 0; i < lrc.synclyrics.size()-2; i++){
 			prelyrics.append(lrc.synclyrics[i] + "\n");
 	}
@@ -320,35 +248,68 @@ void chopset_lyrics(DB_playItem_t *track, ustring lyrics){
 	mtx.unlock();
 }
 
-// Functions to lowercase and remove special characters.
+//---------------------------------------------------------------------
+//*********** /Functions to make scroll on sync lyrics. ***************
+//---------------------------------------------------------------------
 
-string shorter(char* text) {
 
-	string temp = "";
-	string counter = string(text);
-	transform(counter.begin(), counter.end(), counter.begin(), ::tolower);
+//---------------------------------------------------------------------
+//************ Share functions of lyrics downloaders. *****************
+//---------------------------------------------------------------------
 
-	for (unsigned i = 0; i <  counter.size(); i++) {
-        // Finding the character whose ASCII value fall under this range
-        if ( (counter[i] >= 'A' &&  counter[i] <= 'Z') ||  (counter[i] >= 'a' &&  counter[i] <= 'z') ||  (counter[i] >= '0' &&  counter[i] <= '9')) {  
-            // erase function to erase the character
-            temp = temp + counter[i];
-        }
-    }
-	return temp;
-}
+//	Function to save lyrics to tag.
+void save_meta_data(DB_playItem_t *playing_song, struct parsed_lyrics lyrics){
 
-string specialforspace(const char* text) {
-	string counter = string(text);
-	for(unsigned i = 0; i < counter.size(); i++)
-    {
-        if( (counter[i] < 'A' ||  counter[i] > 'Z') &&  (counter[i] < 'a' ||  counter[i] > 'z') &&  (counter[i] < '0' ||  counter[i] > '9')) {  
-            counter[i] = ' ';
+	deadbeef->pl_lock();
+	const char *SYLT = deadbeef->pl_find_meta(playing_song, "SYLT");
+	const char *LYRICS = deadbeef->pl_find_meta(playing_song, "LYRICS");
+	const char *UNSYNCEDLYRICS = deadbeef->pl_find_meta(playing_song, "UNSYNCEDLYRICS");
+	deadbeef->pl_unlock();
+	if (lyrics.sync == true){	
+		if (SYLT){
+			deadbeef->pl_delete_meta(playing_song, "SYLT");
 		}
-    }
-    return counter;
+
+		if (LYRICS){
+			deadbeef->pl_delete_meta(playing_song, "LYRICS");
+		}
+		deadbeef->pl_add_meta(playing_song, "LYRICS", lyrics.lyrics.c_str());	
+	}
+	else{
+		if (UNSYNCEDLYRICS){
+			deadbeef->pl_delete_meta(playing_song, "UNSYNCEDLYRICS");
+		}
+		deadbeef->pl_add_meta(playing_song, "UNSYNCEDLYRICS", lyrics.lyrics.c_str());	
+	}
+	deadbeef->pl_lock(); 
+	const char *dec = deadbeef->pl_find_meta_raw(playing_song, ":DECODER"); 
+	char decoder_id[100];
+
+	if (dec){
+		strncpy(decoder_id, dec, sizeof(decoder_id));
+	}
+	int match = playing_song && dec;
+	deadbeef->pl_unlock();
+
+	if (match){
+		DB_decoder_t *dec = NULL;
+		DB_decoder_t **decoders = deadbeef->plug_get_decoder_list();
+
+		for (int i = 0; decoders[i]; i++){
+
+			if (!strcmp(decoders[i]->plugin.id, decoder_id)){
+				dec = decoders[i];
+
+				if (dec->write_metadata) {
+					dec->write_metadata(playing_song);
+				}
+				break;
+			}
+		}
+	}
 }
 
+// Function to remove special characters.
 string specialforplus(const char* text) {
 	string counter = string(text);
 	for(unsigned i = 0; i < counter.size(); i++)
@@ -359,10 +320,7 @@ string specialforplus(const char* text) {
     }
     return counter;
 }
-
-
-// Share functions of lyrics downloaders.
-
+// Function to remove replace substrings.
 std::string replace_string(string subject, const string& search, const string& replace) {
     size_t pos = 0;
     while ((pos = subject.find(search, pos)) != string::npos) {
@@ -377,6 +335,7 @@ size_t WriteCallback(void *contents, size_t size, size_t nmemb, void *userp) {
     return size * nmemb;
 }
 
+// Function to split strings.
 vector<string> split(string s, string delimiter) {
     size_t pos_start = 0, pos_end, delim_len = delimiter.length();
     string token;
@@ -391,9 +350,9 @@ vector<string> split(string s, string delimiter) {
     return res;
 }
 
+// Function to parse webpages.
 string text_downloader(curl_slist *slist, string url) {
 	CURL *curl_handle;
-	CURLcode res;
 	curl_handle = curl_easy_init();
 	string readBuffer = "";
 	if (curl_handle) {	
@@ -408,18 +367,20 @@ string text_downloader(curl_slist *slist, string url) {
 		curl_easy_setopt(curl_handle, CURLOPT_HTTPHEADER, slist);
 		curl_easy_setopt(curl_handle, CURLOPT_URL, url.c_str());
 		curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, &readBuffer);
-		res = curl_easy_perform(curl_handle);
+		curl_easy_perform(curl_handle);
 		curl_easy_cleanup(curl_handle);
 	}
 	return readBuffer;
 }
 
+//---------------------------------------------------------------------
+//************ /Share functions of lyrics downloaders. ****************
+//---------------------------------------------------------------------
 
-//static experimental::optional<ustring>(*const providers[])(DB_playItem_t *) = {&get_lyrics_from_script, &download_lyrics_from_syair};
 
 inline string cached_filename(string artist, string title) {
-	replace(artist.begin(), artist.end(), '/', '_');
-	replace(title.begin(), title.end(), '/', '_');
+	replace_string(artist, "/", "_");
+	replace_string(title, "/", "_");
 	if (syncedlyrics == true){
 	return lyrics_dir + artist + " - " + title + ".lrc";
 	}
@@ -444,20 +405,41 @@ void ensure_lyrics_path_exists() {
  * @param title  The song title
  * @note         Have no idea about the encodings, so a bug possible here
  */
-experimental::optional<ustring> load_cached_lyrics(const char *artist, const char *title) {
-	string filename = cached_filename(artist, title);
-	debug_out << "filename = '" << filename << "'\n";
-	try {
-		return {file_get_contents(filename)};
-	} catch (const FileError& error) {
-		debug_out << error.what();
-		return {};
+
+//---------------------------------------------------------------------
+//****** Main: Try to get lyrics from Metadata,file,spotify. **********
+//---------------------------------------------------------------------
+
+struct parsed_lyrics get_lyrics_next_to_file(DB_playItem_t *track) {
+	bool sync = false;
+	ifstream infile;
+	string lyrics;
+
+	deadbeef->pl_lock();
+	const char *track_location = deadbeef->pl_find_meta(track, ":URI");
+	deadbeef->pl_unlock();
+	string trackstring = track_location;
+	size_t lastindex = trackstring.find_last_of(".");
+	trackstring = trackstring.substr(0, lastindex);
+
+	infile.open(trackstring + ".lrc", ios_base::trunc); //ios_base::app
+	if(infile.is_open()){
+		lyrics = infile.get();
+		sync = true;	
 	}
+	else{
+		infile.open(trackstring + ".txt", ios_base::trunc); //ios_base::app
+	}
+
+	if(infile.is_open()){
+		lyrics = infile.get();
+	}
+	return{lyrics, sync};	
 }
 
 struct parsed_lyrics get_lyrics_from_metadata(DB_playItem_t *track) {
-	pl_lock_guard guard;
 	syncedlyrics = true;
+	deadbeef->pl_lock();
 	const char *lyrics = deadbeef->pl_find_meta(track, "lyrics")
 							?: deadbeef->pl_find_meta(track, "SYLT");
 	if (!lyrics) {
@@ -468,13 +450,16 @@ struct parsed_lyrics get_lyrics_from_metadata(DB_playItem_t *track) {
 			lyrics = "";
 		}
 	}
+	deadbeef->pl_unlock();
 	string string_lyrics = lyrics;
 	return {string_lyrics, syncedlyrics};
 }
 
 
-void save_next_to_file(struct parsed_lyrics lyrics, DB_playItem_t *track){
+void save_next_to_file(struct parsed_lyrics lyrics, DB_playItem_t *track) {
+	deadbeef->pl_lock();
 	const char *track_location = deadbeef->pl_find_meta(track, ":URI");
+	deadbeef->pl_unlock();
 	ofstream outfile;
 	string trackstring = track_location;
 	size_t lastindex = trackstring.find_last_of(".");
@@ -495,13 +480,13 @@ void save_next_to_file(struct parsed_lyrics lyrics, DB_playItem_t *track){
 			std::cout << "Unable to write file\n";
 		}
 	}
-	sync_or_unsync(lyrics.sync);
 	outfile << lyrics.lyrics << endl;
-	outfile.close();	
+	outfile.close();
 }
 
-void set_info(DB_playItem_t *track){
-	ustring info = "";
+//Sets track info if no lyrics founded.
+void set_info(DB_playItem_t *track) {
+	string info = "";
 	char *locale = setlocale(LC_CTYPE, NULL);
     int count  = deadbeef->pl_find_meta_int(track, "PLAY_COUNTER", -1);
 	if (count == -1){
@@ -545,7 +530,7 @@ void set_info(DB_playItem_t *track){
 	}
 
 	if (firs != NULL) {
-		ustring first = firs;	
+		string first = firs;	
 		if (strcmp(locale , "es_ES.UTF-8") == 0) {
 			info.append("Por primera vez el ");
 			info.append(first.substr(0,10));
@@ -572,7 +557,7 @@ void set_info(DB_playItem_t *track){
 
 	if (las != NULL) {
 		if (strcmp(locale , "es_ES.UTF-8") == 0) {
-			ustring last = las;
+			string last = las;
 			info.append("Por última vez el ");
 			info.append(last.substr(0,10));
 			info.append("\n a las ");
@@ -580,7 +565,7 @@ void set_info(DB_playItem_t *track){
 			info.append("\n \n \n");
 		}
 		else{
-			ustring last = las;
+			string last = las;
 			info.append("For the last time the");
 			info.append(last.substr(0,10));
 			info.append("\n at ");
@@ -617,6 +602,7 @@ void set_info(DB_playItem_t *track){
 	set_lyrics(track, info, "",  "", "");
 }
 
+//Main function:
 void update_lyrics(void *tr) {
 	linessizes.clear();
 	DB_playItem_t *track = static_cast<DB_playItem_t*>(tr);
@@ -635,48 +621,45 @@ void update_lyrics(void *tr) {
 	const char *artist;
 	const char *title;
 	{
-		pl_lock_guard guard;
+		deadbeef->pl_lock();
 		artist = deadbeef->pl_find_meta(track, "artist");
 		title  = deadbeef->pl_find_meta(track, "title");
+		deadbeef->pl_unlock();
 	}
 
 
 
 	if (artist && title) {
-		if (auto lyrics = load_cached_lyrics(artist, title)) {
-			if (syncedlyrics == true){
-				chopset_lyrics(track, *lyrics);
+		struct parsed_lyrics cached_lyrics = get_lyrics_next_to_file(track);
+
+		if (cached_lyrics.lyrics != "") {
+			if (cached_lyrics.sync == true) {
+				chopset_lyrics(track, cached_lyrics.lyrics);
 			}
 			else{
-				set_lyrics(track, "", "", *lyrics, "");
+				set_lyrics(track, "", "", cached_lyrics.lyrics, "");
 			}
-		return;
+			sync_or_unsync(syncedlyrics);
+			return;
 		}
 	}
 	set_lyrics(track, "", "", _("Loading..."), "");
 
-	// No lyrics in the tag or cache; try to get some and cache if succeeded.
-
-	string artistnospecial = specialforspace(artist);
-	string titlenoespecial = specialforspace(title);
-	string artistandtitle = artistnospecial + " - " + titlenoespecial;
-	string synclyrics = lyrics_dir + artistnospecial + " - " + titlenoespecial + ".lrc";
-	replace( artistnospecial.begin(), artistnospecial.end(), ' ', '+');
-	replace( titlenoespecial.begin(), titlenoespecial.end(), ' ', '+');
-	string url = "https://www.lyricsify.com/search?artist=" + artistnospecial + "&title=" + titlenoespecial;
-
+//	 No lyrics in the tag or cache; try to get some and cache if succeeded.
 //	Search for lyrics on spotify:	
 	struct parsed_lyrics spoty_lyrics = {"",false};
 	spoty_lyrics = spotify(specialforplus(title), specialforplus(artist));
 
 	if (spoty_lyrics.lyrics != "") {
-		save_next_to_file(spoty_lyrics, track);
+//		save_next_to_file(spoty_lyrics, track);
 		if (spoty_lyrics.sync){
 			chopset_lyrics(track, spoty_lyrics.lyrics);
+
 		}
 		else{
 			set_lyrics(track, "", "", spoty_lyrics.lyrics, "");
 		}
+		sync_or_unsync(syncedlyrics);
 		save_meta_data(track, spoty_lyrics);
 		return;
 	}
@@ -684,6 +667,10 @@ void update_lyrics(void *tr) {
 //	If no lyrics founded in any site, show track info:
 	set_info(track);
 }
+
+//---------------------------------------------------------------------
+//****** /Main: Try to get lyrics from Metadata,file,spotify. *********
+//---------------------------------------------------------------------
 
 
 /**
@@ -707,8 +694,7 @@ int mkpath(const string &name, mode_t mode) {
 
 int remove_from_cache_action(DB_plugin_action_t *, int ctx) {
 	if (ctx == DDB_ACTION_CTX_SELECTION) {
-		pl_lock_guard guard;
-
+		deadbeef->pl_lock();
 		ddb_playlist_t *playlist = deadbeef->plt_get_curr();
 		if (playlist) {
 			DB_playItem_t *current = deadbeef->plt_get_first(playlist, PL_MAIN);
@@ -720,6 +706,7 @@ int remove_from_cache_action(DB_plugin_action_t *, int ctx) {
 						remove(cached_filename(artist, title).c_str());
 				}
 				DB_playItem_t *next = deadbeef->pl_get_next(current, PL_MAIN);
+				deadbeef->pl_unlock();
 				deadbeef->pl_item_unref(current);
 				current = next;
 			}

@@ -1,22 +1,14 @@
 #include "ui.h"
-
-#include <memory>
-#include <vector>
-#include <regex>
-
-#include <glibmm/main.h>
-#include <gtkmm/main.h>
-#include <gtkmm/scrolledwindow.h>
-#include <gtkmm/textbuffer.h>
-#include <gtkmm/textview.h>
-#include <gtkmm/widget.h>
-
-#include <gtkmm.h>
-#include <time.h>
-
 #include "debug.h"
 #include "gettext.h"
 #include <deadbeef/deadbeef.h>
+
+#include <vector>
+#include <regex>
+#include <gtkmm.h>
+#include <time.h>
+#include <string>
+
 
 using namespace std;
 using namespace Gtk;
@@ -46,7 +38,7 @@ bool isValidHexaCode(string str) {
 }
 
 // "Size" lyrics to be able to make lines "dissapear" on top.
-vector<int> sizelines(DB_playItem_t * track, Glib::ustring lyrics) {
+vector<int> sizelines(DB_playItem_t * track, string lyrics) {
 	set_lyrics(track, lyrics,"","","");
 //	std::cout << "Sizelines" << "\n";
 	death_signal = 1;
@@ -56,7 +48,6 @@ vector<int> sizelines(DB_playItem_t * track, Glib::ustring lyrics) {
 
 //	I didn't found another way to be sure lyrics are displayed than wait millisenconds with nanosleep.
 	nanosleep(&tss, NULL);
-	pl_lock_guard guard;
 	values.push_back(lyricbar->get_allocation().get_height()*(deadbeef->conf_get_int("lyricbar.vpostion", 50))/100);
 	values.push_back(0);
 	Gdk::Rectangle rectangle;
@@ -81,27 +72,37 @@ vector<int> sizelines(DB_playItem_t * track, Glib::ustring lyrics) {
 	return values;
 }
 
-void set_lyrics(DB_playItem_t *track, ustring past, ustring present, ustring future, ustring padding) {
+void set_lyrics(DB_playItem_t *track, string past, string present, string future, string padding) {
 	signal_idle().connect_once([track, past, present, future, padding ] {
-		pl_lock_guard guard;
 
 		if (!is_playing(track)) {
 			return;
 		}
-		ustring artist, title;
+		string artist, title;
+		deadbeef->pl_lock();
 		artist = deadbeef->pl_find_meta(track, "artist") ?: _("Unknown Artist");
 		title  = deadbeef->pl_find_meta(track, "title") ?: _("Unknown Title");
+		deadbeef->pl_unlock();
 	
 		refBuffer->erase(refBuffer->begin(), refBuffer->end());
 
 		refBuffer->insert_with_tags(refBuffer->begin(), title, tagsTitle);
-		refBuffer->insert_with_tags(refBuffer->end(), ustring{"\n"} + artist + "\n\n", tagsArtist);
-		refBuffer->insert_with_tags(refBuffer->end(), padding, tagPadding);
-		refBuffer->insert_with_tags(refBuffer->end(),past, tagsNosyncline);
-		refBuffer->insert_with_tags(refBuffer->end(),present, tagsSyncline);
+
+		if (g_utf8_validate(future.c_str(),-1,NULL)){
+			refBuffer->insert_with_tags(refBuffer->end(), string{"\n"} + artist + "\n\n", tagsArtist);
+			refBuffer->insert_with_tags(refBuffer->end(), padding, tagPadding);
+			refBuffer->insert_with_tags(refBuffer->end(),past, tagsNosyncline);
+			refBuffer->insert_with_tags(refBuffer->end(),present, tagsSyncline);
+			refBuffer->insert_with_tags(refBuffer->end(),future, tagsNosyncline);
+		}
+		else{
+			string error = "Wrong character encoding";
+			refBuffer->insert_with_tags(refBuffer->end(), padding, tagPadding);
+			refBuffer->insert_with_tags(refBuffer->end(),error, tagsSyncline);
+		}
 
 
-		refBuffer->insert_with_tags(refBuffer->end(),future, tagsNosyncline);
+
 
 	});
 }
@@ -244,13 +245,13 @@ GtkWidget *construct_lyricbar() {
 	//load css
 	auto data = g_strdup_printf(cssconfig.c_str());
 
-	Glib::RefPtr<Gtk::CssProvider> cssProvider = Gtk::CssProvider::create();
+	RefPtr<Gtk::CssProvider> cssProvider = Gtk::CssProvider::create();
 	cssProvider->load_from_data(data);
 	
-	Glib::RefPtr<Gtk::StyleContext> styleContext = Gtk::StyleContext::create();
+	RefPtr<Gtk::StyleContext> styleContext = Gtk::StyleContext::create();
 	
 	//get default screen
-	Glib::RefPtr<Gdk::Screen> screen = Gdk::Screen::get_default();
+	RefPtr<Gdk::Screen> screen = Gdk::Screen::get_default();
 	
 	//add provider for screen in all application
 	styleContext->add_provider_for_screen(screen, cssProvider, GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);

@@ -1,36 +1,23 @@
-#include <stdlib.h>
-#include <sys/types.h>
-#include <signal.h>
-#include <unistd.h>
-#include <string.h>
-#include <gtk/gtk.h>
-#include <gtk/gtkx.h>
-#include <math.h>
-#include <ctype.h>
-
 #include "main.h"
 #include "ui.h"
 #include "utils.h"
 #include "lrcspotify.h"
 #include "megalobiz.h"
 #include "azlyrics.h"
+#include <deadbeef/deadbeef.h>
 		
 #include <filesystem>
 #include <vector>
 #include <thread>
-#include <future>
-		
+#include <future>		
 #include <iostream>
 
-#include "id3v2tag.h"
-
-#include <deadbeef/deadbeef.h>
 
 // - Global
 
 char *home_cache = getenv("HOME");
 char *locale_lang = setlocale(LC_CTYPE, NULL);
-string local = "/.local/lib/deadbeef/PaneldeConfiguracion.glade";
+string local = "/.local/lib/deadbeef/panels.glade";
 string Glade_file_path = home_cache + local;
 
 
