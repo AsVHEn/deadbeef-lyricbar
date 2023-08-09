@@ -96,6 +96,7 @@ void set_lyrics(DB_playItem_t *track, string past, string present, string future
 			refBuffer->insert_with_tags(refBuffer->end(),future, tagsNosyncline);
 		}
 		else{
+			death_signal = 1;
 			string error = "Wrong character encoding";
 			refBuffer->insert_with_tags(refBuffer->end(), padding, tagPadding);
 			refBuffer->insert_with_tags(refBuffer->end(),error, tagsSyncline);

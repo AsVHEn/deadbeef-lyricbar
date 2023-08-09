@@ -65,6 +65,7 @@ extern "C" {
 int remove_from_cache_action(DB_plugin_action_t *, int ctx);
 bool is_cached(const char *artist, const char *title);
 void ensure_lyrics_path_exists();
+
 #ifdef __cplusplus
 }
 #endif

@@ -5,7 +5,9 @@
 #include "megalobiz.h"
 #include "azlyrics.h"
 #include <deadbeef/deadbeef.h>
-		
+#include "resources.h"
+#include <gtkmm.h>
+
 #include <filesystem>
 #include <vector>
 #include <thread>
@@ -15,10 +17,7 @@
 
 // - Global
 
-char *home_cache = getenv("HOME");
 char *locale_lang = setlocale(LC_CTYPE, NULL);
-string local = "/.local/lib/deadbeef/panels.glade";
-string Glade_file_path = home_cache + local;
 
 
 // - Config widgets
@@ -209,7 +208,7 @@ int on_button_config (GtkMenuItem *menuitem, gpointer user_data) {
 // establish contact with xml code used to adjust widget settings
 //---------------------------------------------------------------------
 
-	builder = gtk_builder_new_from_file (Glade_file_path.c_str());
+	builder = gtk_builder_new_from_resource ("/src/panels.glade");
  
 	ConfigWindow = GTK_WINDOW(gtk_builder_get_object(builder, "ConfigWindow"));
 
@@ -302,6 +301,8 @@ int on_button_config (GtkMenuItem *menuitem, gpointer user_data) {
 
 	
 	gtk_widget_show(GTK_WIDGET(ConfigWindow));
+	gtk_widget_grab_focus(GTK_WIDGET(ConfigWindow));
+	gtk_window_set_keep_above(ConfigWindow,1);
 
 	gtk_main();
 
@@ -383,7 +384,6 @@ void	on_row_double_clicked (GtkButton *b) {
 		selected_lyrics = megalobiz_lyrics_downloader(value);
 	}
 	else if (strcmp(provider, "AZlyrics") == 0){
-		cout << "Value: " << value << "\n";
 		selected_lyrics = azlyrics_lyrics_downloader(value);
 	}
 
@@ -431,7 +431,7 @@ void	on_Exit_clicked (GtkButton *b, gpointer user_data) {
 extern "C"
 int on_button_search (GtkMenuItem *menuitem, gpointer user_data) {
 
-	builder = gtk_builder_new_from_file (Glade_file_path.c_str());
+	builder = gtk_builder_new_from_resource ("/src/panels.glade");
 
 	SearchWindow = GTK_WINDOW(gtk_builder_get_object(builder, "SearchWindow"));
 
@@ -520,6 +520,8 @@ int on_button_search (GtkMenuItem *menuitem, gpointer user_data) {
 	g_signal_connect(Search, "clicked", G_CALLBACK(on_Search_clicked), NULL);
 
 	gtk_widget_show(GTK_WIDGET(SearchWindow));
+	gtk_widget_grab_focus(GTK_WIDGET(SearchWindow));
+	gtk_window_set_keep_above(SearchWindow,1);
 
 	gtk_main();
 	
@@ -560,7 +562,13 @@ string apply_delay(string lyrics, int delay){
 			int minutes;
 			minutes = (line.at(1) - 48)*10 + (line.at(2) - 48);
 			seconds = (line.at(4) - 48)*1000 + (line.at(5) - 48)*100 + (line.at(7) - 48)*10 + (line.at(8) - 48) + delay;
-			time_line = timestamps( minutes*60000 + seconds*10);
+//			Avoid negative timestamps.
+			if (minutes*60000 + seconds*10 > 0) {
+				time_line = timestamps( minutes*60000 + seconds*10);				
+			}
+			else{
+				time_line = timestamps(0);	
+			}
 			text_line = line.substr(10, line.length() - 10); 
 			lyrics_delayed.append(time_line + text_line + "\n");
 		}
@@ -619,10 +627,17 @@ string apply_offset(string lyrics) {
 		start = end + offset.size();
 		end = lyrics.find(squarebracket, start);
 		line = lyrics.substr(start, end - start);
+		int negative_or_not = 1;
+		if (line.at(0) == '-'){
+			line = line.substr(1, -1);
+			negative_or_not = -1;
+		}
+
 		for (unsigned i=0; i < line.length(); ++i){
 			delay = delay + (line.at(i) - 48)*power(10,line.length() - 1 - i);
 		}
-		delay = delay/10;
+
+		delay = delay*negative_or_not/10;
 		start = end + squarebracket.size();
 		end = lyrics.find(offset, start);
 		line = lyrics.substr(start, end - start);
@@ -729,7 +744,7 @@ void	on_Edit_OK_clicked (GtkButton *b, gpointer user_data) {
 extern "C"
 int on_button_edit (GtkMenuItem *menuitem, gpointer user_data) {
 
-	builder = gtk_builder_new_from_file (Glade_file_path.c_str());
+	builder = gtk_builder_new_from_resource ("/src/panels.glade");
 
 	EditWindow = GTK_WINDOW(gtk_builder_get_object(builder, "EditWindow"));
 
@@ -798,7 +813,10 @@ int on_button_edit (GtkMenuItem *menuitem, gpointer user_data) {
 		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(Check_sync), FALSE);	
 	}
 
+//	Always on top.
 	gtk_widget_show(GTK_WIDGET(EditWindow));
+	gtk_widget_grab_focus(GTK_WIDGET(EditWindow));
+	gtk_window_set_keep_above(EditWindow,1);
 
 	gtk_main();
 	

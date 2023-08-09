@@ -1,0 +1,6 @@
+<gresources>
+    <gresource prefix="/">
+        <!-- text files such as XML can be compressed to save memory -->
+        <file compressed="true">src/panels.glade</file>
+    </gresource>
+</gresources>

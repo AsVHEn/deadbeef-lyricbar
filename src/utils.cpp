@@ -18,8 +18,8 @@ using namespace std;
 
 //Global variables:
 
-static const char *home_cache = getenv("XDG_CACHE_HOME");
-static const string lyrics_dir = (home_cache ? string(home_cache) : string(getenv("HOME")) + "/.cache") + "/deadbeef/lyrics/";
+//static const char *home_cache = getenv("XDG_CACHE_HOME");
+//static const string lyrics_dir = (home_cache ? string(home_cache) : string(getenv("HOME")) + "/.cache") + "/deadbeef/lyrics/";
 
 
 
@@ -377,34 +377,18 @@ string text_downloader(curl_slist *slist, string url) {
 //************ /Share functions of lyrics downloaders. ****************
 //---------------------------------------------------------------------
 
-
 inline string cached_filename(string artist, string title) {
-	replace_string(artist, "/", "_");
-	replace_string(title, "/", "_");
-	if (syncedlyrics == true){
-	return lyrics_dir + artist + " - " + title + ".lrc";
-	}
-	else {
-	return lyrics_dir + artist + " - " + title + ".txt";
-	}
+	return 0;
 }
 
 extern "C"
 bool is_cached(const char *artist, const char *title) {
-	return artist && title && access(cached_filename(artist, title).c_str(), 0) == 0;
+	return false;
 }
 
 extern "C"
 void ensure_lyrics_path_exists() {
-	mkpath(lyrics_dir, 0755);
 }
-
-/**
- * Loads the cached lyrics
- * @param artist The artist name
- * @param title  The song title
- * @note         Have no idea about the encodings, so a bug possible here
- */
 
 //---------------------------------------------------------------------
 //****** Main: Try to get lyrics from Metadata,file,spotify. **********

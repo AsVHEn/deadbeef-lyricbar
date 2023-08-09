@@ -139,7 +139,9 @@ struct parsed_lyrics spotify_lyrics_downloader(string trackid){
 		for(size_t j = 0; j < lyrics_split.size(); j++) {
 			if (lyrics_split[j] == "startTimeMs"){
 				lrc_times.push_back(timestamps(stoi(lyrics_split[j+2].c_str())));
-				lrc.push_back(replace_string(lyrics_split[j+6], "\\u0027", "\'"));
+				string 	line = replace_string(lyrics_split[j+6], "\\u0027", "\'");
+						line = replace_string(line, "\\u0026", "&");
+				lrc.push_back(line);
 			} 
 		}
 	}
