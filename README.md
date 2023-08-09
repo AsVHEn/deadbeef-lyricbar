@@ -1,7 +1,7 @@
 Based on loskutov https://github.com/loskutov/deadbeef-lyricbar
 
 # DeaDBeeF Lyricbar Plugin
-Plugin for DeaDBeeF audio player that fetches and shows the song’s synclyrics using various website, also from metadata or lrc/txt file (same name on same folder as track).
+Plugin for [DeaDBeeF audio player](https://github.com/DeaDBeeF-Player/deadbeef) that fetches and shows the song’s synclyrics using various website, also from metadata or lrc/txt file (same name on same folder as track).
 
 ![GIF](https://github.com/AsVHEn/deadbeef-lyricbar/assets/4272271/2506a8cb-2c94-4a73-99c7-33b7aa22e26e)
 
@@ -18,9 +18,8 @@ Clone this repository and perform the following:
 ```sh
 make [gtk3]
 sudo cp *.so /usr/lib/deadbeef # depends on where deadbeef is installed
-sudo cp *.glade ~/.local/lib/deadbeef/ # glade file MUST be in this path
 # OR, to install for the current user only
-mkdir -p ~/.local/lib/deadbeef && cp *.so *.glade ~/.local/lib/deadbeef
+mkdir -p ~/.local/lib/deadbeef && cp *.so ~/.local/lib/deadbeef
 ```
 
 ## Usage
