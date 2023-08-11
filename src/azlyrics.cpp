@@ -1,7 +1,5 @@
 #include "azlyrics.h"
 
-
-
 #include <iostream>
 
 

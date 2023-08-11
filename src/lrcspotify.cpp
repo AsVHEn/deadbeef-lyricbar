@@ -2,7 +2,6 @@
 
 #include <iostream>
 
-
 using namespace std;
 
 vector<string> results;
