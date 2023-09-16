@@ -4,6 +4,7 @@ LIBFLAGS=`pkg-config --cflags $(GTKMM) $(GTK)`
 LIBS=`pkg-config --libs $(GTKMM) $(GTK)`
 LCURL=-lcurl
 LDFLAGS+=-flto=auto
+GLIBC=glib-compile-resources
 
 prefix ?= $(out)
 prefix ?= /usr
@@ -18,30 +19,37 @@ gtk2: GTK=gtk+-2.0
 gtk2: LYRICBAR=ddb_lyricbar_gtk2.so
 gtk2: lyricbar
 
-lyricbar: config_dialog.o lrcspotify.o megalobiz.o azlyrics.o ui.o utils.o main.o
+lyricbar: resource.h config_dialog.o lrcspotify.o megalobiz.o azlyrics.o ui.o utils.o resources.o main.o
 	$(if $(LYRICBAR),, $(error You should only access this target via "gtk3" or "gtk2"))
-	$(CXX) -rdynamic -shared $(LDFLAGS) main.o config_dialog.o lrcspotify.o megalobiz.o azlyrics.o ui.o utils.o $(LCURL) -o $(LYRICBAR) $(LIBS)
+	$(CXX) -rdynamic -shared $(LDFLAGS) main.o resources.o config_dialog.o lrcspotify.o megalobiz.o azlyrics.o ui.o utils.o $(LCURL) -o $(LYRICBAR) $(LIBS)
 
-lrcspotify.o: src/lrcspotify.cpp
+lrcspotify.o: src/lrcspotify.cpp src/lrcspotify.h
 	$(CXX) src/lrcspotify.cpp -c $(LIBFLAGS) $(CXXFLAGS) -lcurl
 
-megalobiz.o: src/megalobiz.cpp
+megalobiz.o: src/megalobiz.cpp src/megalobiz.h
 	$(CXX) src/megalobiz.cpp -c $(LIBFLAGS) $(CXXFLAGS) -lcurl
 
-azlyrics.o: src/azlyrics.cpp
+azlyrics.o: src/azlyrics.cpp src/azlyrics.h
 	$(CXX) src/azlyrics.cpp -c $(LIBFLAGS) $(CXXFLAGS) -lcurl
 
-ui.o: src/ui.cpp
+ui.o: src/ui.cpp src/ui.h
 	$(CXX) src/ui.cpp -c $(LIBFLAGS) $(CXXFLAGS)
 
-utils.o: src/utils.cpp
+utils.o: src/utils.cpp src/utils.h
 	$(CXX) src/utils.cpp -c $(LIBFLAGS) $(CXXFLAGS)
 
-config_dialog.o: src/config_dialog.cpp
+config_dialog.o: src/config_dialog.cpp src/resources.h
 	$(CXX) src/config_dialog.cpp  -c $(LIBFLAGS) $(CXXFLAGS)
+
+resources.o: src/resources.c
+	$(CC) $(CFLAGS) src/resources.c -c `pkg-config --cflags $(GTK)`
 
 main.o: src/main.c
 	$(CC) $(CFLAGS) src/main.c -c `pkg-config --cflags $(GTK)`
+
+resource.h:
+	$(GLIBC) --generate-source src/resources.xml
+	$(GLIBC) --generate-header src/resources.xml
 
 install:
 	install -d $(prefix)/lib/deadbeef
@@ -51,4 +59,3 @@ install:
 
 clean:
 	rm -f *.o *.so
-

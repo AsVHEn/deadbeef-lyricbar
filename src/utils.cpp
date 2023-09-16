@@ -606,8 +606,8 @@ void update_lyrics(void *tr) {
 	const char *title;
 	{
 		deadbeef->pl_lock();
-		artist = deadbeef->pl_find_meta(track, "artist");
-		title  = deadbeef->pl_find_meta(track, "title");
+		artist = deadbeef->pl_find_meta(track, "artist") ?: _("Unknown Artist");
+		title  = deadbeef->pl_find_meta(track, "title") ?: _("Unknown Title");
 		deadbeef->pl_unlock();
 	}
 
