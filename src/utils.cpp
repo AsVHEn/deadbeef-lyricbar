@@ -119,23 +119,22 @@ struct sync lyric2vector( string lyrics){
 	}
 
 	for (unsigned i=0; i < lyrics.length() - 3; ++i){
-		if ((lyrics.at(i) == '[') && (lyrics.at(i+1) == '0') && (lyrics.at(i+3) == ':') ) {
+		if ((lyrics.at(i) == '[') && (lyrics.at(i+3) == ':') && (lyrics.at(i+6) == '.') ) {
   			++repeats;
 			position.push_back ((lyrics.at(i + 1) - 48)*600 + (lyrics.at(i + 2) - 48)*60 + (lyrics.at(i + 4) - 48)*10 + (lyrics.at(i + 5) - 48) + (lyrics.at(i + 7) - 48)*0.1 + (lyrics.at(i + 8) - 48)*0.01);
 			if ((lyrics.length() > i + 10) && (lyrics.at(i+10) != '[')) {
 				line = lyrics.substr(i + 10, lyrics.length() - i - 10);
 				squarebracket = line.find_first_of('[');
 				if (((lyrics.at(i+8 + squarebracket)) != '\n') && (lyrics.at(i+8 + squarebracket)) != '\r'){
-				line = lyrics.substr(i + 10, squarebracket-1);
+                    line = lyrics.substr(i + 10, squarebracket-1);
 				}
 				else {
-					line = lyrics.substr(i + 10, squarebracket-2);
+                    line = lyrics.substr(i + 10, squarebracket-2);
 				}
 				++repeats;
 				while (--repeats ) {
 					synclyrics.push_back (line);
-				}
-					
+				}	
 			}
 		}
 	}
