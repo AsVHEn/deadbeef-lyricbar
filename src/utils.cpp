@@ -2,6 +2,7 @@
 #include "debug.h"
 #include "gettext.h"
 #include "lrcspotify.h"
+#include "lrclrclib.h"
 #include "ui.h"
 
 #include <sys/stat.h>
@@ -629,21 +630,21 @@ void update_lyrics(void *tr) {
 	set_lyrics(track, "", "", _("Loading..."), "");
 
 //	 No lyrics in the tag or cache; try to get some and cache if succeeded.
-//	Search for lyrics on spotify:	
-	struct parsed_lyrics spoty_lyrics = {"",false};
-	spoty_lyrics = spotify(specialforplus(title), specialforplus(artist));
+//	Search for lyrics on LRCLIB:	
+	struct parsed_lyrics lrclib_lyrics = {"",false};
+	lrclib_lyrics = lrclib(specialforplus(title), specialforplus(artist));
 
-	if (spoty_lyrics.lyrics != "") {
-//		save_next_to_file(spoty_lyrics, track);
-		if (spoty_lyrics.sync){
-			chopset_lyrics(track, spoty_lyrics.lyrics);
+	if (lrclib_lyrics.lyrics != "") {
+//		save_next_to_file(lrclib_lyrics, track);
+		if (lrclib_lyrics.sync){
+			chopset_lyrics(track, lrclib_lyrics.lyrics);
 
 		}
 		else{
-			set_lyrics(track, "", "", spoty_lyrics.lyrics, "");
+			set_lyrics(track, "", "", lrclib_lyrics.lyrics, "");
 		}
 		sync_or_unsync(syncedlyrics);
-		save_meta_data(track, spoty_lyrics);
+		save_meta_data(track, lrclib_lyrics);
 		return;
 	}
 
@@ -675,7 +676,7 @@ int mkpath(const string &name, mode_t mode) {
 	return 0;
 }
 
-int remove_from_cache_action(DB_plugin_action_t *, int ctx) {
+int remove_from_cache_action(DB_plugin_action_t *, ddb_action_context_t ctx) {
 	if (ctx == DDB_ACTION_CTX_SELECTION) {
 		deadbeef->pl_lock();
 		ddb_playlist_t *playlist = deadbeef->plt_get_curr();

@@ -2,6 +2,7 @@
 #include "ui.h"
 #include "utils.h"
 #include "lrcspotify.h"
+#include "lrclrclib.h"
 #include "megalobiz.h"
 #include "azlyrics.h"
 #include <deadbeef/deadbeef.h>
@@ -380,6 +381,9 @@ void	on_row_double_clicked (GtkButton *b) {
 	if (strcmp(provider, "Spotify") == 0){
 		selected_lyrics = spotify_lyrics_downloader(value);
 	}
+	else if (strcmp(provider, "LRCLIB") == 0){
+		selected_lyrics = lrclib_lyrics_downloader(value);
+	}
 	else if (strcmp(provider, "Megalobiz") == 0){
 		selected_lyrics = megalobiz_lyrics_downloader(value);
 	}
@@ -398,6 +402,9 @@ void thread_listener_slow(string text_song, string text_artist){
 void thread_listener_fast(string text_song, string text_artist){
 	vector<string> spotify_songs = 	spotify_get_songs(text_song,text_artist);
 	populate_tree_view(spotify_songs, "Spotify");
+	
+	vector<string> lrclib_songs = lrclib_get_songs(text_song,text_artist);
+	populate_tree_view(lrclib_songs, "LRCLIB");
 
 	vector<string> azlyrics_songs = azlyrics_get_songs(text_song, text_artist);
 	populate_tree_view(azlyrics_songs, "AZlyrics");

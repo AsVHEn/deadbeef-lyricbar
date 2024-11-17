@@ -62,7 +62,7 @@ string text_downloader(curl_slist *slist, string url);
 
 extern "C" {
 #endif // __cplusplus
-int remove_from_cache_action(DB_plugin_action_t *, int ctx);
+int remove_from_cache_action(DB_plugin_action_t *, ddb_action_context_t ctx);
 bool is_cached(const char *artist, const char *title);
 void ensure_lyrics_path_exists();
 

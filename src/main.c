@@ -5,6 +5,7 @@
 
 #include "ui.h"
 #include "lrcspotify.h"
+#include "lrclrclib.h"
 #include "utils.h"
 #include "gettext.h"
 #include "config_dialog.h"
@@ -118,7 +119,7 @@ static ddb_gtkui_widget_t *w_lyricbar_create(void) {
 	gtkui_plugin->w_override_signals(widget->base.widget, widget);
 	g_signal_connect(children->data, "populate_popup", G_CALLBACK (_pop), children->data);
 
-	return widget;
+	return (ddb_gtkui_widget_t*)widget;
 }
 
 static int lyricbar_connect() {
