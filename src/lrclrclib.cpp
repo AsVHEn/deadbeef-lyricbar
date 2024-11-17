@@ -50,8 +50,8 @@ vector<string> lrclib_get_songs(string song, string artist){
 				vector<string> duration = split(sub_results[6],",");
 				//cout << "Duration: " << duration[0] << "\n";
 				artists_and_songs.push_back(artist[0]);
-				artists_and_songs.push_back(album[0]);
 				artists_and_songs.push_back(trackname[0]);
+				artists_and_songs.push_back(album[0]);
 				artists_and_songs.push_back(id[0]);
 			}
 		}
@@ -60,6 +60,7 @@ vector<string> lrclib_get_songs(string song, string artist){
 }
 
 struct parsed_lyrics lrclib_lyrics_downloader(string trackid){
+
     vector<string> lyrics;
     vector<string> lyrics_split;
     string url = "";
@@ -70,8 +71,17 @@ struct parsed_lyrics lrclib_lyrics_downloader(string trackid){
   	lyrics = split(text_downloader(slist,url),"{");
 	lyrics_split = split(lyrics[1],"\",\"syncedLyrics\":\"");
 	string string_lyrics = "";
-	string_lyrics = replace_string(lyrics_split[1], "\\n", "\n");
-    string_lyrics = string_lyrics.substr(0, string_lyrics.size()-2);
+	
+	if (lyrics_split.size() > 1){
+	    string_lyrics = replace_string(lyrics_split[1], "\\n", "\n");
+        string_lyrics = string_lyrics.substr(0, string_lyrics.size()-2);
+    }
+    else {
+        synced = false;
+        lyrics_split = split(lyrics_split[0],"\"plainLyrics\":\"") ;
+        string_lyrics = lyrics_split[1].substr(0, lyrics_split[1].size()-22);
+        string_lyrics = replace_string(string_lyrics, "\\n", "\n");
+    }
 	return {string_lyrics, synced};
 }
 // ------------------------------------- MAIN ------------------------------------------- 
@@ -80,9 +90,9 @@ struct parsed_lyrics lrclib(string song,string artist) {
 
 	vector<string> songs_list = lrclib_get_songs(specialforplus(song.c_str()), specialforplus(artist.c_str()));
 
-	//for(int i = 0; i < results.size(); i++) {
-	    //cout << "Results i: " << results[i] << "\n";
-	//}
+	for(int i = 0; i < songs_list.size(); i++) {
+	    cout << "Results i: " << songs_list[i] << "\n";
+	}
 //	Download first result:
 	struct parsed_lyrics string_lyrics = {"",false};
 	if (songs_list.size() > 1){
