@@ -71,6 +71,7 @@ struct parsed_lyrics lrclib_lyrics_downloader(string trackid){
   	lyrics = split(text_downloader(slist,url),"{");
 	lyrics_split = split(lyrics[1],"\",\"syncedLyrics\":\"");
 	string string_lyrics = "";
+	cout << lyrics_split[0] << "\n";
 	
 	if (lyrics_split.size() > 1){
 	    string_lyrics = replace_string(lyrics_split[1], "\\n", "\n");
@@ -79,8 +80,11 @@ struct parsed_lyrics lrclib_lyrics_downloader(string trackid){
     else {
         synced = false;
         lyrics_split = split(lyrics_split[0],"\"plainLyrics\":\"") ;
-        string_lyrics = lyrics_split[1].substr(0, lyrics_split[1].size()-22);
-        string_lyrics = replace_string(string_lyrics, "\\n", "\n");
+        string_lyrics = "";
+        if (lyrics_split.size() > 1){
+            string_lyrics = lyrics_split[1].substr(0, lyrics_split[1].size()-22);
+            string_lyrics = replace_string(string_lyrics, "\\n", "\n");
+        }
     }
 	return {string_lyrics, synced};
 }
@@ -97,7 +101,6 @@ struct parsed_lyrics lrclib(string song,string artist) {
 	struct parsed_lyrics string_lyrics = {"",false};
 	if (songs_list.size() > 1){
 		string_lyrics = lrclib_lyrics_downloader(songs_list[3]);
-		//cout << string_lyrics.lyrics << "\n";
 	}
 	return string_lyrics;
 }
