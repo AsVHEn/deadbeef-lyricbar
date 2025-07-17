@@ -27,7 +27,7 @@ vector<string> lrclib_get_songs(string song, string artist){
 	string empty_search = "[]";
     string url = "";
     
-	url = "https://lrclib.net/api/search?artist_name=" + specialforplus(artist.c_str()) + "&track_name=" + specialforplus(song.c_str());
+	url = "https://lrclib.net/api/search?artist_name=" + replace_string(string(artist.c_str()),"'","") + "&track_name=" + replace_string(string(song.c_str()),"'","");
 	bulk_results = text_downloader(slist,url);
 	//cout << bulk_results << "\n";
 	if (bulk_results.find(empty_search) == std::string::npos){
@@ -71,7 +71,7 @@ struct parsed_lyrics lrclib_lyrics_downloader(string trackid){
   	lyrics = split(text_downloader(slist,url),"{");
 	lyrics_split = split(lyrics[1],"\",\"syncedLyrics\":\"");
 	string string_lyrics = "";
-	cout << lyrics_split[0] << "\n";
+//	cout << lyrics_split[0] << "\n";
 	
 	if (lyrics_split.size() > 1){
 	    string_lyrics = replace_string(lyrics_split[1], "\\n", "\n");
@@ -94,9 +94,9 @@ struct parsed_lyrics lrclib(string song,string artist) {
 
 	vector<string> songs_list = lrclib_get_songs(specialforplus(song.c_str()), specialforplus(artist.c_str()));
 
-	for(int i = 0; i < songs_list.size(); i++) {
-	    cout << "Results i: " << songs_list[i] << "\n";
-	}
+//	for(int i = 0; i < songs_list.size(); i++) {
+//	    cout << "Results i: " << songs_list[i] << "\n";
+//	}
 //	Download first result:
 	struct parsed_lyrics string_lyrics = {"",false};
 	if (songs_list.size() > 1){

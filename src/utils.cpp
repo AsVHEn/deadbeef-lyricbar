@@ -391,13 +391,17 @@ void ensure_lyrics_path_exists() {
 }
 
 //---------------------------------------------------------------------
-//****** Main: Try to get lyrics from Metadata,file,spotify. **********
+//****** Main: Try to get lyrics from Metadata,file,LrcLib. **********
 //---------------------------------------------------------------------
 
 struct parsed_lyrics get_lyrics_next_to_file(DB_playItem_t *track) {
 	bool sync = false;
+	bool first_timestamped = false;
+	int total_lines = 0;
+	int timestamped_lines = 0;
 	ifstream infile;
 	string lyrics;
+	string line;
 
 	deadbeef->pl_lock();
 	const char *track_location = deadbeef->pl_find_meta(track, ":URI");
@@ -405,18 +409,33 @@ struct parsed_lyrics get_lyrics_next_to_file(DB_playItem_t *track) {
 	string trackstring = track_location;
 	size_t lastindex = trackstring.find_last_of(".");
 	trackstring = trackstring.substr(0, lastindex);
-
-	infile.open(trackstring + ".lrc", ios_base::trunc); //ios_base::app
-	if(infile.is_open()){
-		lyrics = infile.get();
-		sync = true;	
+	std::cout << "Trackstring: " << trackstring << "\n";
+	infile.open(trackstring + ".lrc", ios_base::out);
+	if (!infile.is_open()){
+	    infile.open(trackstring + ".txt", ios_base::out);
 	}
-	else{
-		infile.open(trackstring + ".txt", ios_base::trunc); //ios_base::app
-	}
-
+	std::cout << "Is open: " << infile.is_open() << "\n";
+	
 	if(infile.is_open()){
-		lyrics = infile.get();
+		while (getline(infile, line)) {
+		    lyrics = lyrics + line + "\n";
+		    
+		    if (line.length() > 4){
+		        for (unsigned i=0; i < line.length() - 3; ++i){
+		            if ((line.at(i) == '[') && (lyrics.at(i+3) == ':') && (lyrics.at(i+6) == '.') ) {
+		                first_timestamped = true;
+		                timestamped_lines += 1;
+		            }
+		        }
+		    }
+		    if (first_timestamped == true){
+		        total_lines += 1;
+		    }
+		}
+		if (timestamped_lines*100/total_lines){
+		sync = true;		
+		};
+			
 	}
 	return{lyrics, sync};	
 }
@@ -448,6 +467,7 @@ void save_next_to_file(struct parsed_lyrics lyrics, DB_playItem_t *track) {
 	string trackstring = track_location;
 	size_t lastindex = trackstring.find_last_of(".");
 	trackstring = trackstring.substr(0, lastindex);
+	
 	if (lyrics.sync == true) {
 		try {
 		outfile.open(trackstring + ".lrc", ios_base::trunc);//ios_base::app
@@ -598,7 +618,7 @@ void update_lyrics(void *tr) {
 		else{
 			set_lyrics(track, "", "", meta_lyrics.lyrics, "");
 		}
-		sync_or_unsync(syncedlyrics);
+		sync_or_unsync(meta_lyrics.sync);
 	return;
 	}
 
@@ -623,7 +643,7 @@ void update_lyrics(void *tr) {
 			else{
 				set_lyrics(track, "", "", cached_lyrics.lyrics, "");
 			}
-			sync_or_unsync(syncedlyrics);
+			sync_or_unsync(cached_lyrics.sync);
 			return;
 		}
 	}
@@ -632,7 +652,7 @@ void update_lyrics(void *tr) {
 //	 No lyrics in the tag or cache; try to get some and cache if succeeded.
 //	Search for lyrics on LRCLIB:	
 	struct parsed_lyrics lrclib_lyrics = {"",false};
-	lrclib_lyrics = lrclib(specialforplus(title), specialforplus(artist));
+	lrclib_lyrics = lrclib(replace_string(string(title),"'",""), replace_string(string(artist),"'",""));
 
 	if (lrclib_lyrics.lyrics != "") {
 //		save_next_to_file(lrclib_lyrics, track);
@@ -643,7 +663,7 @@ void update_lyrics(void *tr) {
 		else{
 			set_lyrics(track, "", "", lrclib_lyrics.lyrics, "");
 		}
-		sync_or_unsync(syncedlyrics);
+		sync_or_unsync(lrclib_lyrics.sync);
 		save_meta_data(track, lrclib_lyrics);
 		return;
 	}
@@ -653,7 +673,7 @@ void update_lyrics(void *tr) {
 }
 
 //---------------------------------------------------------------------
-//****** /Main: Try to get lyrics from Metadata,file,spotify. *********
+//****** /Main: Try to get lyrics from Metadata,file,LRCLIB. *********
 //---------------------------------------------------------------------
 
 

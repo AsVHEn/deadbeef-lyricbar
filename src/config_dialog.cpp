@@ -319,6 +319,8 @@ int on_button_config (GtkMenuItem *menuitem, gpointer user_data) {
 //******************* SearchWindow ************************************
 //---------------------------------------------------------------------
 
+
+// Function to remove special characters.
 string specialtoplus(const char* text) {
 	string counter = string(text);
 	for(unsigned i = 0; i < counter.size(); i++)
@@ -416,7 +418,8 @@ void	on_Search_clicked (GtkButton *b) {
 	string text_artist, text_song, text_album;
 
 	text_artist = specialtoplus(gtk_entry_get_text(Artist_input));
-	text_song = specialtoplus(gtk_entry_get_text(Song_input));
+	text_song = replace_string(gtk_entry_get_text(Song_input),"'","");
+	text_song = specialtoplus(text_song.c_str());
 	text_album = specialtoplus(gtk_entry_get_text(Album_input));
 
 	thread t1(thread_listener_fast, text_song,text_artist);
