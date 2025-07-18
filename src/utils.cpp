@@ -397,8 +397,8 @@ void ensure_lyrics_path_exists() {
 struct parsed_lyrics get_lyrics_next_to_file(DB_playItem_t *track) {
 	bool sync = false;
 	bool first_timestamped = false;
-	int total_lines = 0;
-	int timestamped_lines = 0;
+	int total_lines = 1;
+	int timestamped_lines = 1;
 	ifstream infile;
 	string lyrics;
 	string line;
@@ -409,12 +409,10 @@ struct parsed_lyrics get_lyrics_next_to_file(DB_playItem_t *track) {
 	string trackstring = track_location;
 	size_t lastindex = trackstring.find_last_of(".");
 	trackstring = trackstring.substr(0, lastindex);
-	std::cout << "Trackstring: " << trackstring << "\n";
 	infile.open(trackstring + ".lrc", ios_base::out);
 	if (!infile.is_open()){
 	    infile.open(trackstring + ".txt", ios_base::out);
 	}
-	std::cout << "Is open: " << infile.is_open() << "\n";
 	
 	if(infile.is_open()){
 		while (getline(infile, line)) {
@@ -432,8 +430,8 @@ struct parsed_lyrics get_lyrics_next_to_file(DB_playItem_t *track) {
 		        total_lines += 1;
 		    }
 		}
-		if (timestamped_lines*100/total_lines){
-		sync = true;		
+		if ((timestamped_lines*100/total_lines > 75) && (total_lines != 1)){
+			sync = true;		
 		};
 			
 	}

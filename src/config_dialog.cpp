@@ -325,10 +325,11 @@ string specialtoplus(const char* text) {
 	string counter = string(text);
 	for(unsigned i = 0; i < counter.size(); i++)
     {
-        if( (counter[i] < 'A' ||  counter[i] > 'Z') &&  (counter[i] < 'a' ||  counter[i] > 'z') &&  (counter[i] < '0' ||  counter[i] > '9')) {  
+        if( (counter[i] < 'A' ||  counter[i] > 'Z') &&  (counter[i] < 'a' ||  counter[i] > 'z') &&  (counter[i] < '0' ||  counter[i] > '9') &&  (counter[i]!='\'')) {  
             counter[i] = '+';
 		}
     }
+    cout << "Counter: " << counter << "\n";
     return counter;
 }
 
