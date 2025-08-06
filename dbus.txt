@@ -1,0 +1,12 @@
+signal time=1752919808.580069 sender=org.freedesktop.DBus -> destination=:1.22723 serial=2 path=/org/freedesktop/DBus; interface=org.freedesktop.DBus; member=NameAcquired
+   string ":1.22723"
+signal time=1752919808.580136 sender=org.freedesktop.DBus -> destination=:1.22723 serial=4 path=/org/freedesktop/DBus; interface=org.freedesktop.DBus; member=NameLost
+   string ":1.22723"
+method call time=1752919808.921851 sender=:1.22720 -> destination=org.freedesktop.DBus serial=7 path=/org/freedesktop/DBus; interface=org.freedesktop.DBus; member=RemoveMatch
+   string "type='signal',sender='org.freedesktop.DBus',interface='org.freedesktop.DBus',member='NameOwnerChanged',arg0='org.freedesktop.Notifications',arg1=''"
+signal time=1752919808.922342 sender=org.freedesktop.DBus -> destination=:1.22720 serial=5 path=/org/freedesktop/DBus; interface=org.freedesktop.DBus; member=NameLost
+   string ":1.22720"
+signal time=1752919808.922415 sender=org.freedesktop.DBus -> destination=(null destination) serial=78907 path=/org/freedesktop/DBus; interface=org.freedesktop.DBus; member=NameOwnerChanged
+   string ":1.22720"
+   string ":1.22720"
+   string ""

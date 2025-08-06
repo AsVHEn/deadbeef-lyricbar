@@ -39,8 +39,9 @@ struct chopped{
 	string future;
 };
 
-
 string specialforplus(const char* text);
+
+string urlencode(const string &s);
 
 bool is_playing(DB_playItem_t *track);
 

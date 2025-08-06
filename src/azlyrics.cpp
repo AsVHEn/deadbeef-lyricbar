@@ -18,7 +18,8 @@ vector<string> azlyrics_get_songs(string song,string artist){
 	slist = curl_slist_append(slist, "User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.0.0 Safari/537.36");
 	slist = curl_slist_append(slist, "app-platform: WebPlayer");
 	slist = curl_slist_append(slist, "content-type: text/html; charset=utf-8");
-	string url = "https://search.azlyrics.com/search.php?q=" + specialforplus(song.c_str()) + "+" + specialforplus(artist.c_str()) + end_url_search;
+	string url = "https://search.azlyrics.com/search.php?q=" + urlencode(song) + "+" + urlencode(artist) + end_url_search;
+	cout << "Azlyrics url: " << url << "\n";
 	bulk_results = text_downloader(slist,url);
 	if (bulk_results.find(empty_search) == std::string::npos){
 	  	results = split(bulk_results,"\n");
@@ -66,7 +67,7 @@ struct parsed_lyrics azlyrics(string song,string artist) {
 
 	struct parsed_lyrics string_lyrics = {"",false};
 	vector<string> results;
-	results = azlyrics_get_songs(specialforplus(song.c_str()), specialforplus(artist.c_str()));
+	results = azlyrics_get_songs(song, artist);
 //	for(int i = 0; i < results.size(); i+=3) {
 //		cout << "artist: " << results[i] << " Song: " << results[i+1] << " url: " << results[i+2] << "\n";
 //	}

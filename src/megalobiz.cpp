@@ -1,4 +1,5 @@
 #include "megalobiz.h"
+#include <iostream>
 
 using namespace std;
 
@@ -37,7 +38,8 @@ vector<string> megalobiz_get_songs(string song,string artist){
 	slist = curl_slist_append(slist, "User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.0.0 Safari/537.36");
 	slist = curl_slist_append(slist, "app-platform: WebPlayer");
 	slist = curl_slist_append(slist, "content-type: text/html; charset=utf-8");
-	string url = "https://www.megalobiz.com/search/all?qry=" + specialforplus(song.c_str()) + "+" + specialforplus(artist.c_str()) + "&searchButton.x=0&searchButton.y=0";
+	string url = "https://www.megalobiz.com/search/all?qry=" + urlencode(song) + "+" + urlencode(artist) + "&searchButton.x=0&searchButton.y=0";
+	cout << "Megalobiz url: " << url << "\n";
 	bulk_results = text_downloader(slist,url);
 	if (bulk_results.find(empty_search) == std::string::npos){
 	  	results = split(bulk_results,"\n");
@@ -115,7 +117,7 @@ struct parsed_lyrics megalobiz(string song,string artist) {
 
 	vector<string> results;
 	
-	results = megalobiz_get_songs(specialforplus(song.c_str()), specialforplus(artist.c_str()));
+	results = megalobiz_get_songs(song, artist);
 //	cout << results[0] << "\n";
 
 //	Download first result:

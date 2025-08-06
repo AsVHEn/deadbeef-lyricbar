@@ -40,7 +40,7 @@ struct timespec ts = {0, 50000000};
 // For debug:
 
 bool is_playing(DB_playItem_t *track) {
-	DB_playItem_t *pl_track = deadbeef->streamer_get_playing_track();
+	DB_playItem_t *pl_track = deadbeef->streamer_get_playing_track_safe();
 	if ((pl_track) && (pl_track != track)){
 		deadbeef->pl_item_unref(pl_track);
 		return false;
@@ -226,7 +226,7 @@ void thread_listener(DB_playItem_t *track){
 void chopset_lyrics(DB_playItem_t *track, string lyrics){
 //	cout << "Chopset lyrics" "\n";
 	lrc = lyric2vector(lyrics);
-	DB_playItem_t *it = deadbeef->streamer_get_playing_track();
+	DB_playItem_t *it = deadbeef->streamer_get_playing_track_safe();
 	float length = deadbeef->pl_get_item_duration(it);
 
 	lrc.position.push_back((float)length -0.2);
@@ -307,6 +307,24 @@ void save_meta_data(DB_playItem_t *playing_song, struct parsed_lyrics lyrics){
 			}
 		}
 	}
+}
+
+// Function to encode characters to URL hexadecimal.
+std::string urlencode(const std::string &s) {
+    static const char hexachars[]= "0123456789abcdef";
+    std::string converted;
+    for(int i=0, ix=s.length(); i<ix; i++) {
+        const char& c = s[i];
+        if ( (c >= 'A' &&  c <= 'Z') || (c >= 'a' &&  c <= 'z') || (c >= '0' &&  c <= '9') || (c=='-' || c=='_' || c=='.' || c=='~')) {
+            converted = converted + c;
+        }
+        else {
+            converted = converted + '%';
+            converted = converted + hexachars[(c&0xF0)>>4];
+            converted = converted + hexachars[(c&0x0F)];
+        }
+    }
+    return converted;
 }
 
 // Function to remove special characters.
@@ -457,7 +475,7 @@ struct parsed_lyrics get_lyrics_from_metadata(DB_playItem_t *track) {
 }
 
 
-void save_next_to_file(struct parsed_lyrics lyrics, DB_playItem_t *track) {
+void save_next_to_file(DB_playItem_t *track, struct parsed_lyrics lyrics) {
 	deadbeef->pl_lock();
 	const char *track_location = deadbeef->pl_find_meta(track, ":URI");
 	deadbeef->pl_unlock();
@@ -662,10 +680,16 @@ void update_lyrics(void *tr) {
 			set_lyrics(track, "", "", lrclib_lyrics.lyrics, "");
 		}
 		sync_or_unsync(lrclib_lyrics.sync);
-		save_meta_data(track, lrclib_lyrics);
+		if (deadbeef->conf_get_int("save_method", 0) == 0){
+			save_meta_data(track, lrclib_lyrics);
+		}
+		else if (deadbeef->conf_get_int("save_method", 0) == 1){
+		    save_next_to_file(track, lrclib_lyrics);
+		}
+		
 		return;
 	}
-
+	
 //	If no lyrics founded in any site, show track info:
 	set_info(track);
 }

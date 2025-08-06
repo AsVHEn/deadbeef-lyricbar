@@ -18,7 +18,8 @@
 
 // - Global
 
-char *locale_lang = setlocale(LC_CTYPE, NULL);
+//char *locale_lang = setlocale(LC_CTYPE, NULL);
+locale l("");
 
 
 // - Config widgets
@@ -31,6 +32,9 @@ GtkColorButton	*Text_color;
 GtkRadioButton	*Align_left;
 GtkRadioButton	*Align_center;
 GtkRadioButton	*Align_right;
+GtkRadioButton	*Save_IDTag;
+GtkRadioButton	*Save_file;
+GtkRadioButton	*Save_no_save;
 GtkSpinButton	*Highlight_line;
 GtkCheckButton	*Check_bold;
 GtkSpinButton	*Edge;
@@ -41,10 +45,12 @@ GtkLabel		*Background_color_label;
 GtkLabel		*Text_color_label;
 GtkLabel		*Highlight_color_label;
 GtkLabel		*Align_label;
+GtkLabel		*Save_method_label;
 GtkLabel		*Highlight_line_label;
 GtkLabel		*Edge_label;
 
 int Align_int_value;
+int Save_method_int_value;
 int Check_bold_int_value;
 
 // - Search widgets
@@ -145,14 +151,34 @@ void	on_Text_color_color_set (GtkColorButton *c) {
 void	on_Align_toggled(GtkRadioButton *b) {
 	
 	if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(b))){
-		if (strcmp(gtk_button_get_label(GTK_BUTTON(b)), "Left") == 0){
+		if ((strcmp(gtk_button_get_label(GTK_BUTTON(b)), "Left") == 0) ||
+		    (strcmp(gtk_button_get_label(GTK_BUTTON(b)), "Izquierda") == 0)){
 			Align_int_value	= 0;
 		}
-		else if (strcmp(gtk_button_get_label(GTK_BUTTON(b)), "Center") == 0){
+		else if ((strcmp(gtk_button_get_label(GTK_BUTTON(b)), "Center") == 0) ||
+		         (strcmp(gtk_button_get_label(GTK_BUTTON(b)), "Centro") == 0)){
 			Align_int_value	= 1;
 		}
-		else if (strcmp(gtk_button_get_label(GTK_BUTTON(b)), "Right") == 0){
+		else if ((strcmp(gtk_button_get_label(GTK_BUTTON(b)), "Right") == 0) ||
+		         (strcmp(gtk_button_get_label(GTK_BUTTON(b)), "Derecha") == 0)){
 			Align_int_value	= 2;
+		}
+	}
+}
+
+void	on_Save_method_toggled(GtkRadioButton *b) {
+	
+	if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(b))){
+		if (strcmp(gtk_button_get_label(GTK_BUTTON(b)), "IDTag") == 0){
+			Save_method_int_value = 0;
+		}
+		else if ((strcmp(gtk_button_get_label(GTK_BUTTON(b)), "File") == 0) ||
+		         (strcmp(gtk_button_get_label(GTK_BUTTON(b)), "Archivo") == 0)){
+			Save_method_int_value = 1;
+		}
+		else if ((strcmp(gtk_button_get_label(GTK_BUTTON(b)), "No save") == 0) ||
+		         (strcmp(gtk_button_get_label(GTK_BUTTON(b)), "No guardar") == 0)){
+			Save_method_int_value = 2;
 		}
 	}
 }
@@ -173,9 +199,9 @@ void	on_Cancel_clicked (GtkButton *b, gpointer user_data) {
 
 void	on_Apply_clicked (GtkButton *b) {
 	deadbeef->conf_set_int("lyricbar.lyrics.alignment", Align_int_value);
+	deadbeef->conf_set_int("save_method", Save_method_int_value);
 	deadbeef->conf_set_int("lyricbar.vpostion", gtk_spin_button_get_value (GTK_SPIN_BUTTON(Highlight_line)));
 	deadbeef->conf_set_int("lyricbar.border", gtk_spin_button_get_value (GTK_SPIN_BUTTON(Edge)));
-	printf("%s \n", "Apply clicked");
 	get_tags();
 	//gtk_label_set_text (GTK_LABEL(Title), (const gchar* ) "Apply");
 }
@@ -223,6 +249,9 @@ int on_button_config (GtkMenuItem *menuitem, gpointer user_data) {
 	Align_left 				= GTK_RADIO_BUTTON(gtk_builder_get_object(builder, "Align_left"));
 	Align_center 			= GTK_RADIO_BUTTON(gtk_builder_get_object(builder, "Align_center"));
 	Align_right 			= GTK_RADIO_BUTTON(gtk_builder_get_object(builder, "Align_right"));
+	Save_IDTag 				= GTK_RADIO_BUTTON(gtk_builder_get_object(builder, "Save_IDTag"));
+	Save_file 		    	= GTK_RADIO_BUTTON(gtk_builder_get_object(builder, "Save_file"));
+	Save_no_save 			= GTK_RADIO_BUTTON(gtk_builder_get_object(builder, "Save_no_save"));
 	OK 						= GTK_BUTTON(gtk_builder_get_object(builder, "OK"));
 	Cancel 					= GTK_BUTTON(gtk_builder_get_object(builder, "Cancel"));
 	Apply 					= GTK_BUTTON(gtk_builder_get_object(builder, "Apply"));
@@ -230,27 +259,35 @@ int on_button_config (GtkMenuItem *menuitem, gpointer user_data) {
 	Text_color_label		= GTK_LABEL(gtk_builder_get_object(builder, "Text_color_label"));
 	Highlight_color_label	= GTK_LABEL(gtk_builder_get_object(builder, "Highlight_color_label"));
 	Align_label				= GTK_LABEL(gtk_builder_get_object(builder, "Align_label"));
+	Save_method_label		= GTK_LABEL(gtk_builder_get_object(builder, "Save_method_label"));
 	Edge_label				= GTK_LABEL(gtk_builder_get_object(builder, "Edge_label"));
 	Highlight_line_label	= GTK_LABEL(gtk_builder_get_object(builder, "Highlight_line_label"));
 
 
 //	Translation:
-	if (strcmp(locale_lang , "es_ES.UTF-8") != 0) {
+	if (strcmp(l.name().c_str() , "es_ES.UTF-8") != 0) {
 		gtk_label_set_label(Background_color_label, "Background color: ");
 		gtk_label_set_label(Text_color_label, "Text color: ");
 		gtk_label_set_label(Highlight_color_label, "Highlight color: ");
 		gtk_label_set_label(Align_label, "Align: ");
+		gtk_label_set_label(Save_method_label, "Save to: ");
 		gtk_label_set_label(Edge_label, "Edge: ");
 		gtk_label_set_label(Highlight_line_label, "Highlight line height %: ");
 		gtk_button_set_label(GTK_BUTTON(Check_bold), "Bold");
 		gtk_button_set_label(GTK_BUTTON(Align_left), "Left");
 		gtk_button_set_label(GTK_BUTTON(Align_center), "Center");
 		gtk_button_set_label(GTK_BUTTON(Align_right), "Right");
+		gtk_button_set_label(GTK_BUTTON(Save_IDTag), "IDTag");
+		gtk_button_set_label(GTK_BUTTON(Save_file), "File");
+		gtk_button_set_label(GTK_BUTTON(Save_no_save), "No save");
 		gtk_window_set_title(ConfigWindow, "Config");
 	}
 
 	gtk_radio_button_join_group(Align_center, Align_left);
 	gtk_radio_button_join_group(Align_right, Align_left);
+	gtk_radio_button_join_group(Save_file, Save_IDTag);
+	gtk_radio_button_join_group(Save_no_save, Save_IDTag);
+	
 
 //	Signals:
 	g_signal_connect(ConfigWindow, "destroy", G_CALLBACK(gtk_main_quit), NULL);
@@ -261,6 +298,9 @@ int on_button_config (GtkMenuItem *menuitem, gpointer user_data) {
 	g_signal_connect(Align_left, "toggled", G_CALLBACK(on_Align_toggled), NULL);
 	g_signal_connect(Align_center, "toggled", G_CALLBACK(on_Align_toggled), NULL);
 	g_signal_connect(Align_right, "toggled", G_CALLBACK(on_Align_toggled), NULL);
+	g_signal_connect(Save_IDTag, "toggled", G_CALLBACK(on_Save_method_toggled), NULL);
+	g_signal_connect(Save_file, "toggled", G_CALLBACK(on_Save_method_toggled), NULL);
+	g_signal_connect(Save_no_save, "toggled", G_CALLBACK(on_Save_method_toggled), NULL);
 	g_signal_connect(Check_bold, "toggled", G_CALLBACK(on_check_bold_toggled), NULL);
 	g_signal_connect(OK, "clicked", G_CALLBACK(on_OK_clicked), ConfigWindow);
 	g_signal_connect(Cancel, "clicked", G_CALLBACK(on_Cancel_clicked), ConfigWindow);
@@ -288,7 +328,7 @@ int on_button_config (GtkMenuItem *menuitem, gpointer user_data) {
 	}
 
 // Saved value to radio buttons:
-	Align_int_value = deadbeef->conf_get_int("lyricbar.lyrics.alignment", 1);
+	Align_int_value         = deadbeef->conf_get_int("lyricbar.lyrics.alignment", 1);
 
 	if (Align_int_value == 0){
 		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(Align_left), TRUE);		
@@ -300,6 +340,18 @@ int on_button_config (GtkMenuItem *menuitem, gpointer user_data) {
 		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(Align_right), TRUE);
 	}
 
+    Save_method_int_value   = deadbeef->conf_get_int("save_method", 0);
+    
+    if (Save_method_int_value == 0){
+		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(Save_IDTag), TRUE);		
+	}
+	else if (Save_method_int_value == 1){
+		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(Save_file), TRUE);
+	}
+	else if (Save_method_int_value == 2){
+		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(Save_no_save), TRUE);
+	}
+	
 	
 	gtk_widget_show(GTK_WIDGET(ConfigWindow));
 	gtk_widget_grab_focus(GTK_WIDGET(ConfigWindow));
@@ -321,16 +373,26 @@ int on_button_config (GtkMenuItem *menuitem, gpointer user_data) {
 
 
 // Function to remove special characters.
-string specialtoplus(const char* text) {
-	string counter = string(text);
-	for(unsigned i = 0; i < counter.size(); i++)
+string specialtoplus(string text) {;
+    // Change all of this: "ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿ" to next line
+	string non_diacritic = "AAAAAAECEEEEIIIIDNOOOOOx0UUUUYPsaaaaaaeceeeeiiiiOnooooo/0uuuuypy";
+	string result;
+
+	for(unsigned i = 0; i < text.size(); i++)
     {
-        if( (counter[i] < 'A' ||  counter[i] > 'Z') &&  (counter[i] < 'a' ||  counter[i] > 'z') &&  (counter[i] < '0' ||  counter[i] > '9') &&  (counter[i]!='\'')) {  
-            counter[i] = '+';
+        if( (text[i] < 'A' ||  text[i] > 'Z') &&  (text[i] < 'a' ||  text[i] > 'z') &&  (text[i] < '0' ||  text[i] > '9') && (text[i]!='\'')) { 
+            if ((text[i] < 0) && (text[i] != -61)){
+                result = result + non_diacritic[text[i] + 127];
+            }
+            else if (text[i] != -61){
+                result = result + '+';
+            }
+        }
+        else{
+            result  = result + text[i];
 		}
     }
-    cout << "Counter: " << counter << "\n";
-    return counter;
+    return result;
 }
 
 void populate_tree_view(vector<string> songs, string source) {
@@ -345,13 +407,13 @@ void populate_tree_view(vector<string> songs, string source) {
 	
 }
 
-void	on_Save_clicked (GtkButton *b, gpointer user_data) {
+void on_Save_clicked (GtkButton *b, gpointer user_data) {
 	deadbeef->pl_lock();
 	DB_playItem_t *track = static_cast<DB_playItem_t *>(user_data);
 	deadbeef->pl_unlock(); 
 	if (track){
 		save_meta_data( track, selected_lyrics);
-		DB_playItem_t *playing_track = deadbeef->streamer_get_playing_track();
+		DB_playItem_t *playing_track = deadbeef->streamer_get_playing_track_safe();
 		if (playing_track){
 			if (playing_track == track){
 				death_signal = 1;
@@ -414,13 +476,14 @@ void thread_listener_fast(string text_song, string text_artist){
 }
 
 
-void	on_Search_clicked (GtkButton *b) {
+void on_Search_clicked (GtkButton *b) {
 	gtk_tree_store_clear(treeStore);
 	string text_artist, text_song, text_album;
 
-	text_artist = specialtoplus(gtk_entry_get_text(Artist_input));
+	//text_artist = specialtoplus(gtk_entry_get_text(Artist_input));
+	text_artist = gtk_entry_get_text(Artist_input);
 	text_song = replace_string(gtk_entry_get_text(Song_input),"'","");
-	text_song = specialtoplus(text_song.c_str());
+	//text_song = specialtoplus(gtk_entry_get_text(Song_input));
 	text_album = specialtoplus(gtk_entry_get_text(Album_input));
 
 	thread t1(thread_listener_fast, text_song,text_artist);
@@ -472,7 +535,7 @@ int on_button_search (GtkMenuItem *menuitem, gpointer user_data) {
 	Search				= GTK_BUTTON(gtk_builder_get_object(builder, "Search"));
 
 //	Translation:
-	if (strcmp(locale_lang , "es_ES.UTF-8") != 0) {
+	if (strcmp(l.name().c_str() , "es_ES.UTF-8") != 0) {;
 		gtk_label_set_text (PreViewLyrics, (const gchar* ) "Lyrics preview");
 		gtk_label_set_label(Artist_label, "Artist: ");
 		gtk_label_set_label(Song_label, "Song: ");
@@ -488,7 +551,7 @@ int on_button_search (GtkMenuItem *menuitem, gpointer user_data) {
 	}
 
 //	Playing track or selected on playlist to labels:
-	DB_playItem_t *track = deadbeef->streamer_get_playing_track();
+	DB_playItem_t *track = deadbeef->streamer_get_playing_track_safe();
 	if (track){
 		deadbeef->pl_lock();
 		gtk_entry_set_text(Artist_input, deadbeef->pl_find_meta(track, "artist"));
@@ -741,7 +804,7 @@ void	on_Edit_apply_clicked (GtkButton *b) {
 	if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(Check_sync))){
 		sync = true;
 	}
-	DB_playItem_t *track = deadbeef->streamer_get_playing_track();
+	DB_playItem_t *track = deadbeef->streamer_get_playing_track_safe();
 	save_meta_data(track, {text, sync});
 	deadbeef->pl_item_unref(track);
 }
@@ -777,7 +840,7 @@ int on_button_edit (GtkMenuItem *menuitem, gpointer user_data) {
 	Sync_or_not_label		= GTK_LABEL(gtk_builder_get_object(builder, "Highlight_line_label"));
 
 //	Translation:
-	if (strcmp(locale_lang , "es_ES.UTF-8") != 0) {
+	if (strcmp(l.name().c_str() , "es_ES.UTF-8") != 0) {
 		gtk_label_set_label(Sync_label, "Syncronization ");
 		gtk_label_set_label(Sync_or_not_label, "Sync or not ");
 		gtk_button_set_label(GTK_BUTTON(Plus_time), "+ 0.1 seconds");
@@ -788,7 +851,7 @@ int on_button_edit (GtkMenuItem *menuitem, gpointer user_data) {
 		gtk_window_set_title(EditWindow, "Edit");
 	}
 
-	DB_playItem_t *track = deadbeef->streamer_get_playing_track();
+	DB_playItem_t *track = deadbeef->streamer_get_playing_track_safe();
 	struct parsed_lyrics track_lyrics;
 
 	if (track){

@@ -47,7 +47,7 @@ static gboolean _pop (GtkTextView *text_view, GtkWidget *popup, gpointer user_da
 	gtk_widget_show(popup_config);
 	gtk_widget_show(popup_search);
 	gtk_widget_show(popup_edit);
-	DB_playItem_t *track = deadbeef->streamer_get_playing_track();
+	DB_playItem_t *track = deadbeef->streamer_get_playing_track_safe();
 	if (track) {
 		deadbeef->pl_item_unref(track);
 	}

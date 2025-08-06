@@ -244,7 +244,7 @@ GtkWidget *construct_lyricbar() {
 	");
 
 	//load css
-	auto data = g_strdup_printf(cssconfig.c_str());
+	auto data = g_strdup_printf("%s", cssconfig.c_str());
 
 	RefPtr<Gtk::CssProvider> cssProvider = Gtk::CssProvider::create();
 	cssProvider->load_from_data(data);
