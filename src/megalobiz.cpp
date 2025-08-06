@@ -39,7 +39,7 @@ vector<string> megalobiz_get_songs(string song,string artist){
 	slist = curl_slist_append(slist, "app-platform: WebPlayer");
 	slist = curl_slist_append(slist, "content-type: text/html; charset=utf-8");
 	string url = "https://www.megalobiz.com/search/all?qry=" + urlencode(song) + "+" + urlencode(artist) + "&searchButton.x=0&searchButton.y=0";
-	cout << "Megalobiz url: " << url << "\n";
+//	cout << "Megalobiz url: " << url << "\n";
 	bulk_results = text_downloader(slist,url);
 	if (bulk_results.find(empty_search) == std::string::npos){
 	  	results = split(bulk_results,"\n");

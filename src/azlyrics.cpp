@@ -19,7 +19,7 @@ vector<string> azlyrics_get_songs(string song,string artist){
 	slist = curl_slist_append(slist, "app-platform: WebPlayer");
 	slist = curl_slist_append(slist, "content-type: text/html; charset=utf-8");
 	string url = "https://search.azlyrics.com/search.php?q=" + urlencode(song) + "+" + urlencode(artist) + end_url_search;
-	cout << "Azlyrics url: " << url << "\n";
+//	cout << "Azlyrics url: " << url << "\n";
 	bulk_results = text_downloader(slist,url);
 	if (bulk_results.find(empty_search) == std::string::npos){
 	  	results = split(bulk_results,"\n");
