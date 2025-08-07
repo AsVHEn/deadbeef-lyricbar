@@ -150,7 +150,7 @@ static DB_misc_t plugin = {
 	.plugin.api_vmajor = 1,
 	.plugin.api_vminor = 5,
 	.plugin.version_major = 0,
-	.plugin.version_minor = 1,
+	.plugin.version_minor = 5,
 	.plugin.type = DB_PLUGIN_MISC,
 	.plugin.name = "Lyricbar",
 #if GTK_MAJOR_VERSION == 2
@@ -165,7 +165,8 @@ static DB_misc_t plugin = {
     .plugin.stop = lyricbar_stop,
 	.plugin.disconnect = lyricbar_disconnect,
 	.plugin.get_actions = lyricbar_get_actions,
-	.plugin.configdialog =	"property \"Font scale: \" hscale[0,10,0.01] lyricbar.fontscale 1; \n"
+	.plugin.configdialog =	"property \"Auto search enabled \" checkbox lyricbar.autosearch.enable 1; \n"
+	                        "property \"Font scale: \" hscale[0,10,0.01] lyricbar.fontscale 1; \n"
 							"property \"End url search (AZlyrics) (&x=...): \" entry lyricbar.end_url_search \"\"; \n"
 							"property \"SP-DC cookie (Spotify): \" entry lyricbar.sp_dc_cookie \"\"; \n"
 };

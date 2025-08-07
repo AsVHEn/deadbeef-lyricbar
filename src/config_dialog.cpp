@@ -101,8 +101,8 @@ GtkCheckButton		*Check_sync;
 GtkButton			*Backward;
 GtkButton			*Pause_play;
 GtkButton			*Forward;
-GtkLabel			*Sync_label;
-GtkLabel			*Sync_or_not_label;
+GtkFrame            *Sync_frame;
+GtkFrame            *Timestamps_frame;
 
 
 GtkTextBuffer		*refBuffer;
@@ -836,13 +836,13 @@ int on_button_edit (GtkMenuItem *menuitem, gpointer user_data) {
 	Edit_apply				= GTK_BUTTON(gtk_builder_get_object(builder, "Edit_apply"));
 	Edit_cancel				= GTK_BUTTON(gtk_builder_get_object(builder, "Edit_cancel"));
 	Edit_OK					= GTK_BUTTON(gtk_builder_get_object(builder, "Edit_OK"));
-	Sync_label				= GTK_LABEL(gtk_builder_get_object(builder, "Highlight_line_label"));
-	Sync_or_not_label		= GTK_LABEL(gtk_builder_get_object(builder, "Highlight_line_label"));
+	Sync_frame              = GTK_FRAME(gtk_builder_get_object(builder, "Sync_frame"));
+	Timestamps_frame		= GTK_FRAME(gtk_builder_get_object(builder, "Timestamps_frame"));
 
 //	Translation:
 	if (strcmp(l.name().c_str() , "es_ES.UTF-8") != 0) {
-		gtk_label_set_label(Sync_label, "Syncronization ");
-		gtk_label_set_label(Sync_or_not_label, "Sync or not ");
+		gtk_frame_set_label(Sync_frame, "Syncronization ");
+		gtk_frame_set_label(Timestamps_frame, "Sync or not ");
 		gtk_button_set_label(GTK_BUTTON(Plus_time), "+ 0.1 seconds");
 		gtk_button_set_label(GTK_BUTTON(Minus_time), "- 0.1 seconds");
 		gtk_button_set_label(GTK_BUTTON(Apply_offset), "Apply offset");

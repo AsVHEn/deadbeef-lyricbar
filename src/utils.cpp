@@ -666,29 +666,31 @@ void update_lyrics(void *tr) {
 	set_lyrics(track, "", "", _("Loading..."), "");
 
 //	 No lyrics in the tag or cache; try to get some and cache if succeeded.
-//	Search for lyrics on LRCLIB:	
-	struct parsed_lyrics lrclib_lyrics = {"",false};
-	lrclib_lyrics = lrclib(replace_string(string(title),"'",""), replace_string(string(artist),"'",""));
+//	Search for lyrics on LRCLIB:
+    if (deadbeef->conf_get_float("lyricbar.fontscale", 1) == 1){
+    	struct parsed_lyrics lrclib_lyrics = {"",false};
+    	lrclib_lyrics = lrclib(replace_string(string(title),"'",""), replace_string(string(artist),"'",""));
 
-	if (lrclib_lyrics.lyrics != "") {
-//		save_next_to_file(lrclib_lyrics, track);
-		if (lrclib_lyrics.sync){
-			chopset_lyrics(track, lrclib_lyrics.lyrics);
+    	if (lrclib_lyrics.lyrics != "") {
+//  		save_next_to_file(lrclib_lyrics, track);
+    		if (lrclib_lyrics.sync){
+    			chopset_lyrics(track, lrclib_lyrics.lyrics);
 
-		}
-		else{
-			set_lyrics(track, "", "", lrclib_lyrics.lyrics, "");
-		}
-		sync_or_unsync(lrclib_lyrics.sync);
-		if (deadbeef->conf_get_int("save_method", 0) == 0){
-			save_meta_data(track, lrclib_lyrics);
-		}
-		else if (deadbeef->conf_get_int("save_method", 0) == 1){
-		    save_next_to_file(track, lrclib_lyrics);
-		}
-		
-		return;
-	}
+	    	}
+		    else{
+		    	set_lyrics(track, "", "", lrclib_lyrics.lyrics, "");
+		    }
+	    	sync_or_unsync(lrclib_lyrics.sync);
+	    	if (deadbeef->conf_get_int("save_method", 0) == 0){
+	    		save_meta_data(track, lrclib_lyrics);
+	    	}
+	    	else if (deadbeef->conf_get_int("save_method", 0) == 1){
+	    	    save_next_to_file(track, lrclib_lyrics);
+	    	}
+	    	
+	    	return;
+    	}
+    }
 	
 //	If no lyrics founded in any site, show track info:
 	set_info(track);
