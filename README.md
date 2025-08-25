@@ -32,8 +32,8 @@ Lyrics will be stored on tags "LYRICS" for synced, and "UNSYNCEDLYRICS" for non-
 
 Automatic download if no tag or file is found. Also you can manually search for lyrics with a right-click on plugin. ~~To be able to get lyrics from Spoti-fy you will need to input your account's SP-DC on Edit/Preferences/Plugins/Lyricbar (One easy way to know your SP-DC: Install [Cookie-editor](https://cookie-editor.com/) browser extension and login into your account).~~ (Not anymore because of Spotify changes).
 
-~~Same to use AZlyrics with the last part of a manual search URL.
-![Search](https://github.com/AsVHEn/deadbeef-lyricbar/assets/4272271/03b1ade0-11da-4c69-b85b-cb3f26ed8b65)~~ (Trying to find another way).
+~~Same to use AZlyrics with the last part of a manual search URL.~~ (Trying to find another way).
+![Search](https://github.com/AsVHEn/deadbeef-lyricbar/assets/4272271/03b1ade0-11da-4c69-b85b-cb3f26ed8b65)
 
 Right now, working sites are:
 - LRCLIB.
