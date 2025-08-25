@@ -83,9 +83,10 @@ vector<string> split(string s, string delimiter) {
     return res;
 }
 
-string text_downloader(curl_slist *slist, string url) {
+string text_downloader(curl_slist *slist, string url, string search) {
 	CURL *curl_handle;
 	CURLcode res;
+	search = "search="+search;
 	curl_handle = curl_easy_init();
 	string readBuffer = "";
 	if (curl_handle) {	
@@ -93,18 +94,25 @@ string text_downloader(curl_slist *slist, string url) {
 		curl_easy_setopt(curl_handle, CURLOPT_SSL_VERIFYPEER, 0);
 		curl_easy_setopt(curl_handle, CURLOPT_SSL_VERIFYHOST, 0);
 		curl_easy_setopt(curl_handle, CURLOPT_VERBOSE, 0);
-		curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, WriteCallback);
 		curl_easy_setopt(curl_handle, CURLOPT_HEADER, 0);
+		curl_easy_setopt(curl_handle, CURLOPT_ENCODING, NULL);
 		curl_easy_setopt(curl_handle, CURLOPT_FOLLOWLOCATION, false);
-		curl_easy_setopt(curl_handle, CURLOPT_CUSTOMREQUEST, "GET");
 		curl_easy_setopt(curl_handle, CURLOPT_HTTPHEADER, slist);
+		if (search != "search="){
+			curl_easy_setopt(curl_handle, CURLOPT_CUSTOMREQUEST, "POST");
+		    curl_easy_setopt(curl_handle, CURLOPT_POSTFIELDS, search.c_str());
+		}
+		else{
+		    curl_easy_setopt(curl_handle, CURLOPT_CUSTOMREQUEST, "GET");
+		}
 		curl_easy_setopt(curl_handle, CURLOPT_URL, url.c_str());
+		curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, WriteCallback);
 		curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, &readBuffer);
 		res = curl_easy_perform(curl_handle);
 		curl_easy_cleanup(curl_handle);
 	}
 	return readBuffer;
-}
+}  
 
 string get_token(){
 	struct curl_slist *slist = NULL;

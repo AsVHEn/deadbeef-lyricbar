@@ -59,7 +59,7 @@ vector<string> split(string s, string delimiter);
 
 size_t WriteCallback(void *contents, size_t size, size_t nmemb, void *userp);
 
-string text_downloader(curl_slist *slist, string url);
+string text_downloader(curl_slist *slist, string url, string post);
 
 extern "C" {
 #endif // __cplusplus

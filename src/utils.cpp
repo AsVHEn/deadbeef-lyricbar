@@ -1,9 +1,10 @@
 #include "utils.h"
 #include "debug.h"
 #include "gettext.h"
-#include "lrcspotify.h"
-#include "lrclrclib.h"
+#include "sources/lrcspotify.h"
+#include "sources/lrclrclib.h"
 #include "ui.h"
+#include "gettext.h"
 
 #include <sys/stat.h>
 #include <fstream>
@@ -80,7 +81,7 @@ struct sync bubbleSort(vector<double> arr, vector<string> text ,  int n)
 		vector<double> nullposition;
 		vector<string> errortext;
 		nullposition.push_back(0);
-		errortext.push_back("Error with lyrics file or metadata");
+		errortext.push_back(_("Error with lyrics file or metadata"));
 		cout << "Error with lyrics file or metadata \n";
 		struct sync error = {errortext, nullposition};
 		return error;
@@ -369,7 +370,7 @@ vector<string> split(string s, string delimiter) {
 }
 
 // Function to parse webpages.
-string text_downloader(curl_slist *slist, string url) {
+string text_downloader(curl_slist *slist, string url, string post) {
 	CURL *curl_handle;
 	curl_handle = curl_easy_init();
 	string readBuffer = "";
@@ -378,12 +379,19 @@ string text_downloader(curl_slist *slist, string url) {
 		curl_easy_setopt(curl_handle, CURLOPT_SSL_VERIFYPEER, 0);
 		curl_easy_setopt(curl_handle, CURLOPT_SSL_VERIFYHOST, 0);
 		curl_easy_setopt(curl_handle, CURLOPT_VERBOSE, 0);
-		curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, WriteCallback);
 		curl_easy_setopt(curl_handle, CURLOPT_HEADER, 0);
+		curl_easy_setopt(curl_handle, CURLOPT_ENCODING, NULL);
 		curl_easy_setopt(curl_handle, CURLOPT_FOLLOWLOCATION, false);
-		curl_easy_setopt(curl_handle, CURLOPT_CUSTOMREQUEST, "GET");
 		curl_easy_setopt(curl_handle, CURLOPT_HTTPHEADER, slist);
+		if (post != ""){
+			curl_easy_setopt(curl_handle, CURLOPT_CUSTOMREQUEST, "POST");
+		    curl_easy_setopt(curl_handle, CURLOPT_POSTFIELDS, post.c_str());
+		}
+		else{
+		    curl_easy_setopt(curl_handle, CURLOPT_CUSTOMREQUEST, "GET");
+		}
 		curl_easy_setopt(curl_handle, CURLOPT_URL, url.c_str());
+		curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, WriteCallback);
 		curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, &readBuffer);
 		curl_easy_perform(curl_handle);
 		curl_easy_cleanup(curl_handle);
@@ -438,7 +446,7 @@ struct parsed_lyrics get_lyrics_next_to_file(DB_playItem_t *track) {
 		    
 		    if (line.length() > 4){
 		        for (unsigned i=0; i < line.length() - 3; ++i){
-		            if ((line.at(i) == '[') && (lyrics.at(i+3) == ':') && (lyrics.at(i+6) == '.') ) {
+		            if ((line.at(i) == '[') && (line.at(i+3) == ':') && (line.at(i+6) == '.') ) {
 		                first_timestamped = true;
 		                timestamped_lines += 1;
 		            }
@@ -507,116 +515,157 @@ void save_next_to_file(DB_playItem_t *track, struct parsed_lyrics lyrics) {
 //Sets track info if no lyrics founded.
 void set_info(DB_playItem_t *track) {
 	string info = "";
-	char *locale = setlocale(LC_CTYPE, NULL);
+	deadbeef->pl_lock();
     int count  = deadbeef->pl_find_meta_int(track, "PLAY_COUNTER", -1);
 	if (count == -1){
 		count  = deadbeef->pl_find_meta_int(track, "play_count", -1);
 	}
     const char *las  = deadbeef->pl_find_meta (track, "LAST_PLAYED");
     const char *firs  = deadbeef->pl_find_meta (track, "FIRST_PLAYED");
+    const char *publisher = deadbeef->pl_find_meta (track, "PUBLISHER");
+    const char *media = deadbeef->pl_find_meta (track, "MEDIA TYPE");
+    const char *catalog_number = deadbeef->pl_find_meta (track, "CATALOGNUMBER");
+    const char *release_country = deadbeef->pl_find_meta (track, "MUSICBRAINZ ALBUM RELEASE COUNTRY");
+    const char *original_date = deadbeef->pl_find_meta (track, "ORIGINAL_RELEASE_TIME");
+    const char *genre = deadbeef->pl_find_meta (track, "GENRE");
+    
+    //INVOLVED_PEOPLE_LIST and GENRE are a little more tricky to retrieve.
+    DB_metaInfo_t *involved_people_meta = deadbeef->pl_meta_for_key (track, "INVOLVED_PEOPLE_LIST");
+    void *involved_buffer = malloc(100000);
+    char *p2 = (char *)involved_buffer;
+    *p2 = 0;
+    size_t buffer_size = 100000;
+    const char *involved_people = NULL;
+
+    if (involved_people_meta != NULL) {
+        size_t value_size = involved_people_meta->valuesize;
+        if (value_size > buffer_size - 1) {
+            value_size = buffer_size - 1;
+        }
+        memcpy(p2, involved_people_meta->value, value_size);
+        char *p = p2;
+        for (size_t i = 0; i <= value_size; i++, p++) {
+            if (*p == 0) {
+                *p = '\n';
+            }
+        }
+        p2[value_size] = 0;
+        involved_people = p2;
+    }
+    
 	int playcount = deadbeef->playqueue_get_count();
 	int bitrate = deadbeef->streamer_get_apx_bitrate();
 	while (bitrate == -1){
 		bitrate = deadbeef->streamer_get_apx_bitrate();
 	}
 
+    deadbeef->pl_unlock();
 
-	info.append("\n \n \n \n");
+	info.append("\n \n");
 
 	if (count == -1){
 		count = 0;
 	}
 	
 	if (count == 1){
-		if (strcmp(locale , "es_ES.UTF-8") == 0) {
-			info.append("Escuchado una vez \n \n \n");
-		}
-		else{
-			info.append("Listened once \n \n \n");
-		}
+		info.append(_("Listened once"));
+		info.append(" \n \n");
 	}
 	else {
-		if (strcmp(locale , "es_ES.UTF-8") == 0) {
-			info.append("Escuchado ");
+			info.append(_("Listened "));
 			info.append(to_string(count));
-			info.append(" veces \n \n \n");
-		}
-		else{
-			info.append("Listened ");
-			info.append(to_string(count));
-			info.append(" times \n \n \n");
-		}
-
+			info.append(_(" times"));
+			info.append("\n \n");
 	}
 
 	if (firs != NULL) {
 		string first = firs;	
-		if (strcmp(locale , "es_ES.UTF-8") == 0) {
-			info.append("Por primera vez el ");
-			info.append(first.substr(0,10));
-			info.append("\n a las ");
-			info.append(first.substr(11, first.length() -1));
-			info.append("\n \n \n");
-		}
-		else{
-			info.append("For the first time ");
-			info.append(first.substr(0,10));
-			info.append("\n at ");
-			info.append(first.substr(11, first.length() -1));
-			info.append("\n \n \n");
-		}
+		info.append(_("For the first time "));
+		info.append(first.substr(0,10));
+		info.append("\n");
+		info.append(_("at "));
+		info.append(first.substr(11, first.length() -1));
+		info.append("\n \n");
 	}
 	else{
-		if (strcmp(locale , "es_ES.UTF-8") == 0) {
-			info.append("No se ha escuchado previamente \n \n \n");
-		}
-		else{
-			info.append("Never listened before \n \n \n");
-		}
+		info.append(_("Never listened before"));
+		info.append("\n \n");
 	}
 
 	if (las != NULL) {
-		if (strcmp(locale , "es_ES.UTF-8") == 0) {
-			string last = las;
-			info.append("Por última vez el ");
-			info.append(last.substr(0,10));
-			info.append("\n a las ");
-			info.append( last.substr(11, last.length() -1));
-			info.append("\n \n \n");
-		}
-		else{
-			string last = las;
-			info.append("For the last time the");
-			info.append(last.substr(0,10));
-			info.append("\n at ");
-			info.append( last.substr(11, last.length() -1));
-			info.append("\n \n \n");
-		}
+		string last = las;
+		info.append(_("For the last time the "));
+		info.append(last.substr(0,10));
+		info.append("\n");
+		info.append(_("at "));
+		info.append( last.substr(11, last.length() -1));
+		info.append("\n \n");
 	}
 
 
 	info.append("Bitrate: ");
 	info.append(to_string(bitrate));
-	info.append(" kbps\n \n \n");
+	info.append(" kbps\n \n");
 	if (playcount == 1){
-		if (strcmp(locale , "es_ES.UTF-8") == 0) {
-			info.append("Hay un archivo en cola\n \n \n");
-		}
-		else{
-			info.append("There is one file in line \n \n \n");
-		}
+		info.append(_("There is one file in line"));
+		info.append("\n \n");
 	}
 	else{
-		if (strcmp(locale , "es_ES.UTF-8") == 0) {
-			info.append("Hay ");
-			info.append(to_string(playcount));
-			info.append(" archivos en cola\n \n \n");
-		}
-		else{
-			info.append("There are \n \n \n");
-			info.append(to_string(playcount));
-			info.append(" files in line\n \n \n");
-		}
+		info.append(_("There are "));
+		info.append(to_string(playcount));
+		info.append(_(" files in line"));
+		info.append("\n \n");
+	}
+	
+	if (publisher != NULL) {
+	    info.append(_("Publisher: "));
+	    info.append(publisher);
+	    info.append("\n \n");
+	}
+	
+	if (media != NULL && catalog_number != NULL && release_country != NULL) {
+	    info.append(media);
+	    info.append(" - ");
+	    info.append(catalog_number);
+	    info.append(" - ");
+	    info.append(release_country);
+	    info.append("\n \n");
+	}
+	
+	if (original_date != NULL) {
+	    info.append(_("Released date: "));
+	    info.append(original_date);
+	    info.append("\n \n");
+	}
+
+	if (genre != NULL) {
+	    info.append(_("Genre: "));
+	    info.append(genre);
+	    info.append("\n \n");
+	}
+
+	if (involved_people != NULL) {
+	    info.append(_("Creators:"));
+	    info.append("\n");
+	    vector<string> involved = split(involved_people, " / ");
+	    if (involved.size() == 1){
+	        vector<string> involved = split(involved[0], "\n");
+	    }
+	    if (involved.size() > 1){
+	        for(unsigned int i = 0; i < involved.size(); i+=1) {
+	            info.append(involved[i]);
+	    	    if (i % 2 == 0){
+	                info.append(" - ");
+	            }
+	            else {
+	                info.append("\n");
+	            }       
+	        }
+	    }
+	    else{
+	        info.append(involved[0]);
+	    }
+	    info.append("\n");
 	}
 
 	set_lyrics(track, info, "",  "", "");
@@ -666,10 +715,11 @@ void update_lyrics(void *tr) {
 	set_lyrics(track, "", "", _("Loading..."), "");
 
 //	 No lyrics in the tag or cache; try to get some and cache if succeeded.
+
 //	Search for lyrics on LRCLIB:
     if (deadbeef->conf_get_float("lyricbar.fontscale", 1) == 1){
     	struct parsed_lyrics lrclib_lyrics = {"",false};
-    	lrclib_lyrics = lrclib(replace_string(string(title),"'",""), replace_string(string(artist),"'",""));
+    	lrclib_lyrics = lrclib(string(title), string(artist), "");
 
     	if (lrclib_lyrics.lyrics != "") {
 //  		save_next_to_file(lrclib_lyrics, track);
@@ -681,6 +731,7 @@ void update_lyrics(void *tr) {
 		    	set_lyrics(track, "", "", lrclib_lyrics.lyrics, "");
 		    }
 	    	sync_or_unsync(lrclib_lyrics.sync);
+	    	
 	    	if (deadbeef->conf_get_int("save_method", 0) == 0){
 	    		save_meta_data(track, lrclib_lyrics);
 	    	}
@@ -691,7 +742,6 @@ void update_lyrics(void *tr) {
 	    	return;
     	}
     }
-	
 //	If no lyrics founded in any site, show track info:
 	set_info(track);
 }
@@ -721,6 +771,9 @@ int mkpath(const string &name, mode_t mode) {
 }
 
 int remove_from_cache_action(DB_plugin_action_t *, ddb_action_context_t ctx) {
+    bindtextdomain("deadbeef-lyricbar", "gettext");
+    textdomain("deadbeef-lyricbar");
+  
 	if (ctx == DDB_ACTION_CTX_SELECTION) {
 		deadbeef->pl_lock();
 		ddb_playlist_t *playlist = deadbeef->plt_get_curr();

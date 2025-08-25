@@ -40,7 +40,7 @@ vector<string> megalobiz_get_songs(string song,string artist){
 	slist = curl_slist_append(slist, "content-type: text/html; charset=utf-8");
 	string url = "https://www.megalobiz.com/search/all?qry=" + urlencode(song) + "+" + urlencode(artist) + "&searchButton.x=0&searchButton.y=0";
 //	cout << "Megalobiz url: " << url << "\n";
-	bulk_results = text_downloader(slist,url);
+	bulk_results = text_downloader(slist,url, "");
 	if (bulk_results.find(empty_search) == std::string::npos){
 	  	results = split(bulk_results,"\n");
     
@@ -93,7 +93,7 @@ struct parsed_lyrics megalobiz_lyrics_downloader(string partial_url){
 	string url = "https://www.megalobiz.com" + partial_url;
 
 
-	results = split(text_downloader(slist, url),"\n");
+	results = split(text_downloader(slist, url, ""),"\n");
 
 	for(size_t i = 0; i < results.size(); i++) {
 		if (results[i]=="[re:www.megalobiz.com/lrc/maker]<br>"){

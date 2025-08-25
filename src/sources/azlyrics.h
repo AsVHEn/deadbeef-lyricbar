@@ -1,7 +1,7 @@
 #include <gtk/gtk.h>
 #include <deadbeef/deadbeef.h>
 
-#include "utils.h"
+#include "../utils.h"
 #include "lrcspotify.h"
 
 #ifdef __cplusplus

@@ -19,17 +19,22 @@ using namespace std;
 struct curl_slist *slist = NULL;
 
 
-vector<string> lrclib_get_songs(string song, string artist) {
+vector<string> lrclib_get_songs(string song, string artist, string album, int duration) {
 	string artist_and_song;
 	string bulk_results;
 	vector<string> results;
 	vector<string> artists_and_songs, clean_songs;
-	string empty_search = "[]"; 
+	string empty_search = "[]";
 	string url = "https://lrclib.net/api/search?artist_name=" + urlencode(artist) + "&track_name=" + urlencode(song);
-	bulk_results = text_downloader(slist,url);
+	if (album != ""){
+	url = url + "&album_name=" + album;
+	}
+	if (duration != 0){
+	    url = url + "&duration=" + to_string(duration);
+	}
+	bulk_results = text_downloader(slist, url, "");
 	//cout << bulk_results << "\n";
 	if (bulk_results.find(empty_search) == std::string::npos) {
-		//cout << "Entró!!!" <<"\n";
 	  	results = split(bulk_results,"},{");
 		for(int i = 0; i < results.size(); i++) {
 			//cout << results[i] << "\n";
@@ -66,7 +71,7 @@ struct parsed_lyrics lrclib_lyrics_downloader(string trackid) {
 	bool synced = true;
 	slist = curl_slist_append(slist, "app-platform: WebPlayer");
 	url = "https://lrclib.net//api/get/" + trackid;
-  	lyrics = split(text_downloader(slist,url),"{");
+  	lyrics = split(text_downloader(slist,url, ""),"{");
 	lyrics_split = split(lyrics[1],"\",\"syncedLyrics\":\"");
 	string string_lyrics = "";
 //	cout << lyrics_split[0] << "\n";
@@ -88,9 +93,9 @@ struct parsed_lyrics lrclib_lyrics_downloader(string trackid) {
 }
 // ------------------------------------- MAIN ------------------------------------------- 
 
-struct parsed_lyrics lrclib(string song,string artist) {
+struct parsed_lyrics lrclib(string song,string artist, string album) {
 
-	vector<string> songs_list = lrclib_get_songs(song, artist);
+	vector<string> songs_list = lrclib_get_songs(song, artist, album, 0);
 
 //	for(int i = 0; i < songs_list.size(); i++) {
 //	    cout << "Results i: " << songs_list[i] << "\n";

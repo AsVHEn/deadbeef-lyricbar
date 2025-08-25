@@ -1,6 +1,6 @@
 #pragma once
 #include <deadbeef/deadbeef.h>
-#include "utils.h"
+#include "../utils.h"
 
 #include <gtk/gtk.h>
 

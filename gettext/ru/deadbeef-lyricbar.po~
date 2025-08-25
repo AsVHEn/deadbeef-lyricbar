@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-08-25 12:19+0200\n"
+"POT-Creation-Date: 2025-08-25 12:18+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -219,72 +219,4 @@ msgstr ""
 
 #: src/sources/lrcmusic163.cpp:158
 msgid "LYRICS: "
-msgstr ""
-
-#: src/sources/lrcmusic163.cpp:159
-msgid "COMPOSER: "
-msgstr ""
-
-#: src/sources/lrcmusic163.cpp:160
-msgid "RECORDING ENGINEER: "
-msgstr ""
-
-#: src/sources/lrcmusic163.cpp:161
-msgid "AUDIO ENGINEER: "
-msgstr ""
-
-#: src/sources/lrcmusic163.cpp:162
-msgid "ASSISTANT ENGINEER: "
-msgstr ""
-
-#: src/sources/lrcmusic163.cpp:163
-msgid "MIXING: "
-msgstr ""
-
-#: src/sources/lrcmusic163.cpp:164
-msgid "MUSICAL PERFORMER: "
-msgstr ""
-
-#: src/sources/lrcmusic163.cpp:165
-msgid "MASTER ENGINEER: "
-msgstr ""
-
-#: src/sources/lrcmusic163.cpp:166
-msgid "PRODUCER: "
-msgstr ""
-
-#: src/sources/lrcmusic163.cpp:167
-msgid "POST-PRODUCER: "
-msgstr ""
-
-#: src/sources/lrcmusic163.cpp:168
-msgid "BASS: "
-msgstr ""
-
-#: src/sources/lrcmusic163.cpp:169
-msgid "ADDITIONAL PRODUCTION: "
-msgstr ""
-
-#: src/sources/lrcmusic163.cpp:170
-msgid "VOICE: "
-msgstr ""
-
-#: src/sources/lrcmusic163.cpp:171
-msgid "GUITAR: "
-msgstr ""
-
-#: src/sources/lrcmusic163.cpp:172
-msgid "KEYBOARDS: "
-msgstr ""
-
-#: src/sources/lrcmusic163.cpp:173
-msgid "DRUMS: "
-msgstr ""
-
-#: src/sources/lrcmusic163.cpp:174
-msgid "PROGRAMMING: "
-msgstr ""
-
-#: src/sources/lrcmusic163.cpp:175
-msgid "MIX ASSISTANT: "
 msgstr ""

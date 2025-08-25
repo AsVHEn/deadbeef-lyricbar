@@ -9,7 +9,6 @@
 #include <time.h>
 #include <string>
 
-
 using namespace std;
 using namespace Gtk;
 using namespace Glib;
@@ -48,7 +47,9 @@ vector<int> sizelines(DB_playItem_t * track, string lyrics) {
 
 //	I didn't found another way to be sure lyrics are displayed than wait millisenconds with nanosleep.
 	nanosleep(&tss, NULL);
+	deadbeef->pl_lock();
 	values.push_back(lyricbar->get_allocation().get_height()*(deadbeef->conf_get_int("lyricbar.vpostion", 50))/100);
+	deadbeef->pl_unlock();
 	values.push_back(0);
 	Gdk::Rectangle rectangle;
 	for (int i = 2; i < refBuffer->get_line_count()-1; i++) {

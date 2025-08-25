@@ -1,7 +1,7 @@
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
-# This file is distributed under the same license as the PACKAGE package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# Traducción del plugin de Deadbeef lyricbar al español de España.
+# Copyleft 2025.
+# This file is distributed under the same license as the lyricbar package.
+# AsVHEn <asvhen@gmail.com>, 2025.
 #
 #, fuzzy
 msgid ""
@@ -9,282 +9,282 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-08-25 12:19+0200\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: LANGUAGE <LL@li.org>\n"
-"Language: \n"
+"PO-Revision-Date: 2025-08-19 12:36+0200\n"
+"Last-Translator: AsVHEn <asvhen@gmail.com>\n"
+"Language-Team: Español \n"
+"Language: Spanish \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
 #: src/config_dialog.cpp:272
 msgid "Background color: "
-msgstr ""
+msgstr "Color de fondo: "
 
 #: src/config_dialog.cpp:273
 msgid "Text color: "
-msgstr ""
+msgstr "Color de texto: "
 
 #: src/config_dialog.cpp:274
 msgid "Highlight color: "
-msgstr ""
+msgstr "Color resaltado: "
 
 #: src/config_dialog.cpp:275
 msgid "Align: "
-msgstr ""
+msgstr "Alineación: "
 
 #: src/config_dialog.cpp:276
 msgid "Save to: "
-msgstr ""
+msgstr "Guardar en: "
 
 #: src/config_dialog.cpp:277
 msgid "Edge: "
-msgstr ""
+msgstr "Borde: "
 
 #: src/config_dialog.cpp:278
 msgid "Highlight line height %: "
-msgstr ""
+msgstr "Altura línea resaltada en %: "
 
 #: src/config_dialog.cpp:279
 msgid "Bold"
-msgstr ""
+msgstr "Negrita"
 
 #: src/config_dialog.cpp:280
 msgid "Left"
-msgstr ""
+msgstr "Izquierda"
 
 #: src/config_dialog.cpp:281
 msgid "Center"
-msgstr ""
+msgstr "Centro"
 
 #: src/config_dialog.cpp:282
 msgid "Right"
-msgstr ""
+msgstr "Derecha"
 
 #: src/config_dialog.cpp:283
 msgid "IDTag"
-msgstr ""
+msgstr "IDTag"
 
 #: src/config_dialog.cpp:284
 msgid "File"
-msgstr ""
+msgstr "Archivo"
 
 #: src/config_dialog.cpp:285
 msgid "No save"
-msgstr ""
+msgstr "No guardar"
 
 #: src/config_dialog.cpp:286
 msgid "Config"
-msgstr ""
+msgstr "Configuración"
 
 #: src/config_dialog.cpp:571 src/config_dialog.cpp:581
 msgid "Lyrics preview"
-msgstr ""
+msgstr "Ventana de previsualización de las letras"
 
 #: src/config_dialog.cpp:572
 msgid "Artist: "
-msgstr ""
+msgstr "Artista: "
 
 #: src/config_dialog.cpp:573
 msgid "Song: "
-msgstr ""
+msgstr "Canción: "
 
 #: src/config_dialog.cpp:574
 msgid "Album "
-msgstr ""
+msgstr "Álbum: "
 
 #: src/config_dialog.cpp:575 src/config_dialog.cpp:576
 msgid "Search"
-msgstr ""
+msgstr "Buscar"
 
 #: src/config_dialog.cpp:577
 msgid "Artist"
-msgstr ""
+msgstr "Artista"
 
 #: src/config_dialog.cpp:578
 msgid "Song"
-msgstr ""
+msgstr "Canción"
 
 #: src/config_dialog.cpp:579
 msgid "Album"
-msgstr ""
+msgstr "Álbum"
 
 #: src/config_dialog.cpp:580
 msgid "Source"
-msgstr ""
+msgstr "Origen"
 
 #: src/config_dialog.cpp:878
 msgid "Syncronization "
-msgstr ""
+msgstr "Sincronización "
 
 #: src/config_dialog.cpp:879
 msgid "Sync or not "
-msgstr ""
+msgstr "Marcas de tiempo "
 
 #: src/config_dialog.cpp:880
 msgid "+ 0.1 seconds"
-msgstr ""
+msgstr "+ 0.1 segundos"
 
 #: src/config_dialog.cpp:881
 msgid "- 0.1 seconds"
-msgstr ""
+msgstr "- 0.1 segundos"
 
 #: src/config_dialog.cpp:882
 msgid "Apply offset"
-msgstr ""
+msgstr "Aplicar offset"
 
 #: src/config_dialog.cpp:883
 msgid "Insert timestamp"
-msgstr ""
+msgstr "Insertar marca de tiempo"
 
 #: src/config_dialog.cpp:884
 msgid "Synced lyrics"
-msgstr ""
+msgstr "Letras sincronizadas"
 
 #: src/config_dialog.cpp:885
 msgid "Edit"
-msgstr ""
+msgstr "Editar"
 
 #: src/ui.cpp:84 src/utils.cpp:694
 msgid "Unknown Artist"
-msgstr ""
+msgstr "Artista desconocido"
 
 #: src/ui.cpp:85 src/utils.cpp:695
 msgid "Unknown Title"
-msgstr ""
+msgstr "Título desconocido"
 
 #: src/utils.cpp:84
 msgid "Error with lyrics file or metadata"
-msgstr ""
+msgstr "Error con el archivo de las letras o con metadata"
 
 #: src/utils.cpp:571
 msgid "Listened once"
-msgstr ""
+msgstr "Escuchado una vez"
 
 #: src/utils.cpp:575
 msgid "Listened "
-msgstr ""
+msgstr "Escuchado "
 
 #: src/utils.cpp:577
 msgid " times"
-msgstr ""
+msgstr " veces"
 
 #: src/utils.cpp:583
 msgid "For the first time "
-msgstr ""
+msgstr "Por primera vez el "
 
 #: src/utils.cpp:586 src/utils.cpp:600
 msgid "at "
-msgstr ""
+msgstr "a las "
 
 #: src/utils.cpp:591
 msgid "Never listened before"
-msgstr ""
+msgstr "Nunca escuchado antes"
 
 #: src/utils.cpp:597
 msgid "For the last time the "
-msgstr ""
+msgstr "Por última vez el "
 
 #: src/utils.cpp:610
 msgid "There is one file in line"
-msgstr ""
+msgstr "Hay un archivo en cola"
 
 #: src/utils.cpp:614
 msgid "There are "
-msgstr ""
+msgstr "Hay "
 
 #: src/utils.cpp:616
 msgid " files in line"
-msgstr ""
+msgstr " archivos en cola"
 
 #: src/utils.cpp:621
 msgid "Publisher: "
-msgstr ""
+msgstr "Editado por: "
 
 #: src/utils.cpp:636
 msgid "Released date: "
-msgstr ""
+msgstr "Fecha de publicación: "
 
 #: src/utils.cpp:642
 msgid "Genre: "
-msgstr ""
+msgstr "Género: "
 
 #: src/utils.cpp:648
 msgid "Creators:"
-msgstr ""
+msgstr "Creado por:"
 
 #: src/utils.cpp:715
 msgid "Loading..."
-msgstr ""
+msgstr "Cargando..."
 
 #: src/sources/lrcmusic163.cpp:158
 msgid "LYRICS: "
-msgstr ""
+msgstr "LETRAS: "
 
 #: src/sources/lrcmusic163.cpp:159
 msgid "COMPOSER: "
-msgstr ""
+msgstr "COMPOSICIÓN: "
 
 #: src/sources/lrcmusic163.cpp:160
 msgid "RECORDING ENGINEER: "
-msgstr ""
+msgstr "INGENIERO DE GRABACIÓN: "
 
 #: src/sources/lrcmusic163.cpp:161
 msgid "AUDIO ENGINEER: "
-msgstr ""
+msgstr "INGENIERO DE SONIDO: "
 
 #: src/sources/lrcmusic163.cpp:162
 msgid "ASSISTANT ENGINEER: "
-msgstr ""
+msgstr "INGENIERO ASISTENTE: "
 
 #: src/sources/lrcmusic163.cpp:163
 msgid "MIXING: "
-msgstr ""
+msgstr "MEZCLA: "
 
 #: src/sources/lrcmusic163.cpp:164
 msgid "MUSICAL PERFORMER: "
-msgstr ""
+msgstr "MÚSICOS: "
 
 #: src/sources/lrcmusic163.cpp:165
 msgid "MASTER ENGINEER: "
-msgstr ""
+msgstr "INGENIERIO DE MASTERIZACIÓN: "
 
 #: src/sources/lrcmusic163.cpp:166
 msgid "PRODUCER: "
-msgstr ""
+msgstr "PRODUCCIÓN: "
 
 #: src/sources/lrcmusic163.cpp:167
 msgid "POST-PRODUCER: "
-msgstr ""
+msgstr "POSTPRODUCCIÓN: "
 
 #: src/sources/lrcmusic163.cpp:168
 msgid "BASS: "
-msgstr ""
+msgstr "BAJO: "
 
 #: src/sources/lrcmusic163.cpp:169
 msgid "ADDITIONAL PRODUCTION: "
-msgstr ""
+msgstr "PRODUCCIÓN ADICIONAL: "
 
 #: src/sources/lrcmusic163.cpp:170
 msgid "VOICE: "
-msgstr ""
+msgstr "VOZ: "
 
 #: src/sources/lrcmusic163.cpp:171
 msgid "GUITAR: "
-msgstr ""
+msgstr "GUITARRA: "
 
 #: src/sources/lrcmusic163.cpp:172
 msgid "KEYBOARDS: "
-msgstr ""
+msgstr "TECLADOS: "
 
 #: src/sources/lrcmusic163.cpp:173
 msgid "DRUMS: "
-msgstr ""
+msgstr "BATERÍA: "
 
 #: src/sources/lrcmusic163.cpp:174
 msgid "PROGRAMMING: "
-msgstr ""
+msgstr "PROGRAMACIÓN: "
 
 #: src/sources/lrcmusic163.cpp:175
 msgid "MIX ASSISTANT: "
-msgstr ""
+msgstr "ASISTENTE DE MEZCLA: "

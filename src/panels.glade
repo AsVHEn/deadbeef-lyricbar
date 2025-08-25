@@ -895,7 +895,7 @@
                         <property name="can-focus">False</property>
                         <property name="hexpand">True</property>
                         <property name="vexpand">True</property>
-                        <property name="label" translatable="yes">Lyircs</property>
+                        <property name="label" translatable="yes">Lyrics preview</property>
                       </object>
                     </child>
                   </object>

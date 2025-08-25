@@ -60,7 +60,7 @@ string get_token(){
 	slist = curl_slist_append(slist, "content-type: text/html; charset=utf-8");
 	slist = curl_slist_append(slist, cookie_sp_dc.c_str());
 
-  	results = split(text_downloader(slist,url),"\"");
+  	results = split(text_downloader(slist,url, ""),"\"");
     
 //	Search for token.
 	for(size_t i = 0; i < results.size(); i++) {
@@ -79,7 +79,7 @@ vector<string> spotify_get_songs(string song,string artist){
 	slist = curl_slist_append(slist, "app-platform: WebPlayer");
 	slist = curl_slist_append(slist, bearer_token.c_str());
 	url = "https://api.spotify.com/v1/search?q=track%3A" + song + "+artist%3A" + artist + "&type=track";
-	songs = split(text_downloader(slist,url), ":");
+	songs = split(text_downloader(slist,url, ""), ":");
 	string album;
 
 //	Search for Artist, Album, Track and Spotify ID.
@@ -131,7 +131,7 @@ struct parsed_lyrics spotify_lyrics_downloader(string trackid){
 	url = "https://spclient.wg.spotify.com/color-lyrics/v2/track/" + trackid + "?format=json&market=from_token";
 	vector<string> lrc;
 	vector<string> lrc_times;
-  	lyrics = split(text_downloader(slist,url),"{");
+  	lyrics = split(text_downloader(slist,url, ""),"{");
 	for(size_t i = 0; i < lyrics.size(); i++) {	
 //		cout << "position: " << i << " " << lyrics[i] << "\n";
 		lyrics_split = split(lyrics[i],"\"");

@@ -1,6 +1,8 @@
 #include "azlyrics.h"
 
 #include <iostream>
+#include <algorithm>
+
 
 
 using namespace std;
@@ -10,33 +12,33 @@ vector<string> azlyrics_get_songs(string song,string artist){
 	string bulk_results;
 	vector<string> results;
 	vector<string> artists_and_songs, clean_songs;
-	string text_left = "text-left visitedlyr";
 	string lrc = "/lrc/";
-	string end_url_search = deadbeef->conf_get_str_fast("lyricbar.end_url_search", "");
-	string empty_search = "Sorry, your search returned <b>no results</b>";
-	struct curl_slist *slist = NULL;
-	slist = curl_slist_append(slist, "User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.0.0 Safari/537.36");
+	string empty_search = "\"songs\":[]";
+    struct curl_slist *slist = NULL;
+	slist = curl_slist_append(slist, "User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:128.0) Gecko/20100101 Firefox/128.0");
 	slist = curl_slist_append(slist, "app-platform: WebPlayer");
 	slist = curl_slist_append(slist, "content-type: text/html; charset=utf-8");
-	string url = "https://search.azlyrics.com/search.php?q=" + urlencode(song) + "+" + urlencode(artist) + end_url_search;
-//	cout << "Azlyrics url: " << url << "\n";
-	bulk_results = text_downloader(slist,url);
+	string url = "https://search.azlyrics.com/suggest.php?q=" + urlencode(song) + "+" + urlencode(artist);
+	//string url = "https://www.azlyrics.com/search.com/suggest.php?q=" + urlencode(song) + "+" + urlencode(artist);
+	bulk_results = text_downloader(slist,url, "");
+	
 	if (bulk_results.find(empty_search) == std::string::npos){
-	  	results = split(bulk_results,"\n");
-		for(size_t i = 0; i < results.size(); i++) {
-			if (results[i].find(text_left) != std::string::npos){
-//				cout << "RESULTS [i+1]: " << results[i+1] << "\n";
-				vector<string> sub_results = split(results[i+1],"\"");
-				vector<string> artist = split(sub_results[4],"<b>");
-//				cout << artist[0] << " " << artist[1];
+	  	results = split(bulk_results,"{\"url\":\"");
+		for(size_t i = 0; i < results.size() -1; i++) {
+				vector<string> sub_results = split(results[i+1],"\",\"autocomplete\":\"\\\"");
+				string song_url = sub_results[0];
+				vector<string> artist = split(sub_results[1], "\\\"  - ");
 				string artist_clean = artist[1];
-				artist_clean = split(artist_clean,"<")[0];
+				artist_clean = split(artist_clean,"\"}")[0];
+				string song_clean = artist[0];
+				song_clean.erase(remove(song_clean.begin(), song_clean.end(), '\\'), song_clean.end());
+				song_url.erase(remove(song_url.begin(), song_url.end(), '\\'), song_url.end());
 //				Artist,song,Album (empty), url to lyrics.
 				artists_and_songs.push_back(artist_clean);
-				artists_and_songs.push_back(sub_results[3]);
+				artists_and_songs.push_back(song_clean);
 				artists_and_songs.push_back("");
-				artists_and_songs.push_back(sub_results[1]);
-			}
+				artists_and_songs.push_back(song_url);
+
 		}
 	}
 
@@ -49,7 +51,7 @@ struct parsed_lyrics azlyrics_lyrics_downloader(string url){
 	string string_lyrics = "";
 	bool synced = false;
 
-	results = split(text_downloader(slist, url),"<div>");
+	results = split(text_downloader(slist, url, ""),"<div>");
 	results = split(results[1],"</div>");
 	results = split(results[0],"\n");
 
@@ -68,13 +70,10 @@ struct parsed_lyrics azlyrics(string song,string artist) {
 	struct parsed_lyrics string_lyrics = {"",false};
 	vector<string> results;
 	results = azlyrics_get_songs(song, artist);
-//	for(int i = 0; i < results.size(); i+=3) {
-//		cout << "artist: " << results[i] << " Song: " << results[i+1] << " url: " << results[i+2] << "\n";
-//	}
-
+	
 //	Download first result:
 	if (results.size() > 1){
-		string_lyrics = azlyrics_lyrics_downloader(results[2]);
+		string_lyrics = azlyrics_lyrics_downloader(results[3]);
 	}
 
 

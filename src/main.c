@@ -4,8 +4,8 @@
 #include <stdlib.h>
 
 #include "ui.h"
-#include "lrcspotify.h"
-#include "lrclrclib.h"
+#include "sources/lrcspotify.h"
+#include "sources/lrclrclib.h"
 #include "utils.h"
 #include "gettext.h"
 #include "config_dialog.h"
@@ -13,7 +13,6 @@
 #include <gtk/gtk.h>
 #include <deadbeef/gtkui_api.h>
 #include <stdint.h>
-
 
 static ddb_gtkui_t *gtkui_plugin;
 DB_functions_t *deadbeef;
@@ -23,16 +22,9 @@ static gboolean _pop (GtkTextView *text_view, GtkWidget *popup, gpointer user_da
 	GtkWidget *popup_search;
 	GtkWidget *popup_edit;
 
-	if (strcmp(setlocale(LC_CTYPE, NULL) , "es_ES.UTF-8") == 0) {
-		popup_config = gtk_menu_item_new_with_label("Configurar");
-		popup_search = gtk_menu_item_new_with_label("Buscar");
-		popup_edit = gtk_menu_item_new_with_label("Editar");
-	}
-	else {
-		popup_config = gtk_menu_item_new_with_label("Config");
-		popup_search = gtk_menu_item_new_with_label("Search");
-		popup_edit = gtk_menu_item_new_with_label("Edit");	
-	}
+	popup_config = gtk_menu_item_new_with_label(_("Config"));
+	popup_search = gtk_menu_item_new_with_label(_("Search"));
+	popup_edit = gtk_menu_item_new_with_label(_("Edit"));
 
 	GList *children = gtk_container_get_children(GTK_CONTAINER(popup));
 	gtk_container_remove(GTK_CONTAINER(popup),children->data);
@@ -47,6 +39,7 @@ static gboolean _pop (GtkTextView *text_view, GtkWidget *popup, gpointer user_da
 	gtk_widget_show(popup_config);
 	gtk_widget_show(popup_search);
 	gtk_widget_show(popup_edit);
+	deadbeef->pl_lock();
 	DB_playItem_t *track = deadbeef->streamer_get_playing_track_safe();
 	if (track) {
 		deadbeef->pl_item_unref(track);
@@ -55,6 +48,7 @@ static gboolean _pop (GtkTextView *text_view, GtkWidget *popup, gpointer user_da
 		gtk_widget_set_sensitive (popup_edit,FALSE);
 		gtk_widget_set_sensitive (popup_search,FALSE);
 	}
+	deadbeef->pl_unlock();
 	
 	g_signal_connect_after(popup_config, "activate", G_CALLBACK(on_button_config), user_data);
 	g_signal_connect_after(popup_search, "activate", G_CALLBACK(on_button_search), user_data);
@@ -91,7 +85,6 @@ static DB_plugin_action_t *lyricbar_get_actions() {
 	remove_action.flags |= DB_ACTION_DISABLED;
 	DB_playItem_t *current = deadbeef->pl_get_first(PL_MAIN);
 	while (current) {
-		deadbeef->pl_lock();
 		if (deadbeef->pl_is_selected(current) && is_cached(
 		            deadbeef->pl_find_meta(current, "artist"),
 		            deadbeef->pl_find_meta(current, "title"))) {
@@ -99,7 +92,6 @@ static DB_plugin_action_t *lyricbar_get_actions() {
 			deadbeef->pl_item_unref(current);
 			break;
 		}
-		deadbeef->pl_unlock();
 		DB_playItem_t *next = deadbeef->pl_get_next(current, PL_MAIN);
 		deadbeef->pl_item_unref(current);
 		current = next;
@@ -150,7 +142,7 @@ static DB_misc_t plugin = {
 	.plugin.api_vmajor = 1,
 	.plugin.api_vminor = 5,
 	.plugin.version_major = 0,
-	.plugin.version_minor = 5,
+	.plugin.version_minor = 6,
 	.plugin.type = DB_PLUGIN_MISC,
 	.plugin.name = "Lyricbar",
 #if GTK_MAJOR_VERSION == 2
@@ -159,7 +151,7 @@ static DB_misc_t plugin = {
 	.plugin.id = "lyricbar-gtk3",
 #endif
 	.plugin.descr = "Lyricbar plugin for DeadBeeF audio player.\nPlugin for DeaDBeeF audio player that fetches and shows the song’s with scroll on sync lyrics. \n",
-	.plugin.copyright = "Copyleft (C) 2023 AsVHEn\n",
+	.plugin.copyright = "Copyleft (C) 2025 AsVHEn\n",
 	.plugin.website = "https://github.com/asvhen/deadbeef-lyricbar",
 	.plugin.connect = lyricbar_connect,
     .plugin.stop = lyricbar_stop,
@@ -167,7 +159,6 @@ static DB_misc_t plugin = {
 	.plugin.get_actions = lyricbar_get_actions,
 	.plugin.configdialog =	"property \"Auto search enabled \" checkbox lyricbar.autosearch.enable 1; \n"
 	                        "property \"Font scale: \" hscale[0,10,0.01] lyricbar.fontscale 1; \n"
-							"property \"End url search (AZlyrics) (&x=...): \" entry lyricbar.end_url_search \"\"; \n"
 							"property \"SP-DC cookie (Spotify): \" entry lyricbar.sp_dc_cookie \"\"; \n"
 };
 
