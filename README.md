@@ -7,7 +7,7 @@ Plugin for [DeaDBeeF audio player](https://github.com/DeaDBeeF-Player/deadbeef) 
 
 
 ## Dependencies
-To use this plugin, you need to have [gtkmm](http://www.gtkmm.org/) and [gtk3](https://www.gtk.org/) installed.
+To use this plugin, you need to have [gtkmm](http://www.gtkmm.org/) and [gtk3](https://www.gtk.org/) installed. (also: libcurl and libtag)
 
 You need deadbeef.h file to build this plugin. The file /usr/include/deadbeef/deadbeef.h should've been installed with the player itself. If not -- look for deadbeef-plugin-dev package, or something like this. Or get the file from a source tarball.
 

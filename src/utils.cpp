@@ -649,7 +649,7 @@ void set_info(DB_playItem_t *track) {
 	    info.append("\n");
 	    vector<string> involved = split(involved_people, " / ");
 	    if (involved.size() == 1){
-	        vector<string> involved = split(involved[0], "\n");
+	        involved = split(involved[0], "\n");
 	    }
 	    if (involved.size() > 1){
 	        for(unsigned int i = 0; i < involved.size(); i+=1) {
@@ -715,14 +715,11 @@ void update_lyrics(void *tr) {
 	set_lyrics(track, "", "", _("Loading..."), "");
 
 //	 No lyrics in the tag or cache; try to get some and cache if succeeded.
-
 //	Search for lyrics on LRCLIB:
     if (deadbeef->conf_get_float("lyricbar.fontscale", 1) == 1){
     	struct parsed_lyrics lrclib_lyrics = {"",false};
     	lrclib_lyrics = lrclib(string(title), string(artist), "");
-
     	if (lrclib_lyrics.lyrics != "") {
-//  		save_next_to_file(lrclib_lyrics, track);
     		if (lrclib_lyrics.sync){
     			chopset_lyrics(track, lrclib_lyrics.lyrics);
 

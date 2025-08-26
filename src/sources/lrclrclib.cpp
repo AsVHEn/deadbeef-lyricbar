@@ -36,7 +36,7 @@ vector<string> lrclib_get_songs(string song, string artist, string album, int du
 	//cout << bulk_results << "\n";
 	if (bulk_results.find(empty_search) == std::string::npos) {
 	  	results = split(bulk_results,"},{");
-		for(int i = 0; i < results.size(); i++) {
+		for(long unsigned int i = 0; i < results.size(); i++) {
 			//cout << results[i] << "\n";
 			if (results[i].find("id") != std::string::npos) {
 				vector<string> sub_results = split(results[i],":");

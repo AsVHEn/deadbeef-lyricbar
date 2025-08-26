@@ -13,7 +13,7 @@ MO_FILES = $(PO_FILES:.po=.mo)
 #prefix ?= $(out)
 prefix ?= /usr
 
-gtk3: GTKMM=gtkmm-3.0  taglib
+gtk3: GTKMM=gtkmm-3.0 taglib
 gtk3: GTK=gtk+-3.0
 gtk3: LYRICBAR=ddb_lyricbar_gtk3.so
 gtk3: lyricbar
