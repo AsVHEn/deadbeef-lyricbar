@@ -26,7 +26,7 @@ sudo cp ./gettext/[your language]/*.mo /usr/share/locale/[your language]/LC_MESS
 ## Usage
 Activate Design Mode (View → Design mode) and add Lyricbar somewhere. Disable Design Mode back and edit appareance if you want in config options:
 
-![Config](https://github.com/AsVHEn/deadbeef-lyricbar/assets/4272271/5cbf1cba-9eff-4694-ad34-d814b8abe84f)
+![Config](https://github.com/deadbeef-lyricbar/assets/fefa231b-7241-4bb9-b0ce-f76ccd69e8b8)
 
 Lyrics will be stored on tags "LYRICS" for synced, and "UNSYNCEDLYRICS" for non-sync. SYLT tags will be removed if exists.
 
