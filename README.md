@@ -45,4 +45,4 @@ Right now, working sites are:
 There is also a window to edit lyrics.
 ![Edit](https://github.com/user-attachments/assets/f3aa7ac5-21c2-4b85-8568-6d4930162bbd)
 
-In addition, if you want to traslate to your language you only need copy deadbeef-lyricbar/gettext/deadbeef-lyricbar.pot, rename to deadbeef-lyricbar.po, edit it and put /gettext/[your language]/ before compiling. Also if you're not satisfied with lyrics providers you can help adding another ones :D.
+In addition, if you want to traslate to your language you only need copy deadbeef-lyricbar/gettext/deadbeef-lyricbar.pot (only spanish is available at the moment), rename to deadbeef-lyricbar.po, edit it and put /gettext/[your language]/ before compiling. Also if you're not satisfied with lyrics providers you can help adding another ones :D.
