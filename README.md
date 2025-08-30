@@ -26,14 +26,14 @@ sudo cp ./gettext/[your language]/*.mo /usr/share/locale/[your language]/LC_MESS
 ## Usage
 Activate Design Mode (View → Design mode) and add Lyricbar somewhere. Disable Design Mode back and edit appareance if you want in config options:
 
-![Config](https://github.com/deadbeef-lyricbar/assets/fefa231b-7241-4bb9-b0ce-f76ccd69e8b8)
+![Config](https://github.com/user-attachments/assets/8035a41f-dea5-4ea9-89cf-894ea4bfc30d)
 
 Lyrics will be stored on tags "LYRICS" for synced, and "UNSYNCEDLYRICS" for non-sync. SYLT tags will be removed if exists.
 
 Automatic download if no tag or file is found. Also you can manually search for lyrics with a right-click on plugin. ~~To be able to get lyrics from Spoti-fy you will need to input your account's SP-DC on Edit/Preferences/Plugins/Lyricbar (One easy way to know your SP-DC: Install [Cookie-editor](https://cookie-editor.com/) browser extension and login into your account).~~ (Not anymore because of Spotify changes).
 
 ~~Same to use AZlyrics with the last part of a manual search URL.~~ (Trying to find another way).
-![Search](https://github.com/AsVHEn/deadbeef-lyricbar/assets/4272271/03b1ade0-11da-4c69-b85b-cb3f26ed8b65)
+![Search](https://github.com/user-attachments/assets/fefa231b-7241-4bb9-b0ce-f76ccd69e8b8)
 
 Right now, working sites are:
 - LRCLIB.
@@ -43,6 +43,6 @@ Right now, working sites are:
 
 
 There is also a window to edit lyrics.
-![Edit](https://github.com/AsVHEn/deadbeef-lyricbar/assets/4272271/5e2c30b6-e21b-483e-abe6-c0d12ed13d84)
+![Edit](https://github.com/user-attachments/assets/f3aa7ac5-21c2-4b85-8568-6d4930162bbd)
 
 In addition, if you want to traslate to your language you only need copy deadbeef-lyricbar/gettext/deadbeef-lyricbar.pot, rename to deadbeef-lyricbar.po, edit it and put /gettext/[your language]/ before compiling. Also if you're not satisfied with lyrics providers you can help adding another ones :D.
