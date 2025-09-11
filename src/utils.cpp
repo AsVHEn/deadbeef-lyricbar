@@ -530,7 +530,9 @@ void set_info(DB_playItem_t *track) {
     const char *genre = deadbeef->pl_find_meta (track, "GENRE");
     
     //INVOLVED_PEOPLE_LIST and GENRE are a little more tricky to retrieve.
-    DB_metaInfo_t *involved_people_meta = deadbeef->pl_meta_for_key (track, "INVOLVED_PEOPLE_LIST");
+    DB_metaInfo_t *involved_people_meta = deadbeef->pl_meta_for_key (track, "InvolvedPeople");
+    
+    
     void *involved_buffer = malloc(100000);
     char *p2 = (char *)involved_buffer;
     *p2 = 0;

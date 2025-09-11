@@ -1,4 +1,4 @@
-CFLAGS+=-std=c99 -Wall -O2 -D_GNU_SOURCE -fPIC -fvisibility=hidden -flto=auto
+CFLAGS+=-std=c99 -Wall $(COPTS) -D_GNU_SOURCE -fPIC -fvisibility=hidden -flto=auto
 CXXFLAGS+=-std=c++14 -Wall -O2 -fPIC -fvisibility=hidden -flto=auto
 LIBFLAGS=`pkg-config --cflags $(GTKMM) $(GTK)`
 LIBS=`pkg-config --libs $(GTKMM) $(GTK)`
@@ -36,12 +36,12 @@ update_po:
 	xgettext -o gettext/deadbeef-lyricbar.pot --keyword=_ --language=C++ src/*.cpp src/sources/*.cpp
 	$(foreach po,$(PO_FILES), msgmerge --update $(po) gettext/deadbeef-lyricbar.pot;)
 
-lyricbar: resource.h config_dialog.o lrclrclib.o lrcmusic163.o megalobiz.o azlyrics.o rclyricsband.o ui.o utils.o resources.o main.o
+lyricbar: resource.h config_dialog.o lrclrclib.o lrcmusic163.o megalobiz.o azlyrics.o rclyricsband.o ui.o utils.o resources.o main.o lrcspotify.o
 	$(if $(LYRICBAR),, $(error You should only access this target via "gtk3" or "gtk2"))
 	$(CXX) -rdynamic -shared $(LDFLAGS) main.o resources.o config_dialog.o lrcspotify.o lrclrclib.o lrcmusic163.o megalobiz.o azlyrics.o rclyricsband.o ui.o utils.o $(LCURL) -o $(LYRICBAR) $(LIBS)
 
-#lrcspotify.o: src/sources/lrcspotify.cpp src/sources/lrcspotify.h
-#	$(CXX) src/sources/lrcspotify.cpp -c $(LIBFLAGS) $(CXXFLAGS) -lcurl
+lrcspotify.o: src/sources/lrcspotify.cpp src/sources/lrcspotify.h
+	$(CXX) src/sources/lrcspotify.cpp -c $(LIBFLAGS) $(CXXFLAGS) -lcurl
 	
 lrclrclib.o: src/sources/lrclrclib.cpp src/sources/lrclrclib.h
 	$(CXX) src/sources/lrclrclib.cpp -c $(LIBFLAGS) $(CXXFLAGS) -lcurl
@@ -79,8 +79,8 @@ resource.h:
 
 install:
 	install -d $(prefix)/lib/x86_64-linux-gnu/deadbeef
-	install -m 666 -D *.so $(prefix)/lib/x86_64-linux-gnu/deadbeef
-	install -d $(prefix)/share/locale/es/LC_MESSAGES
+	install -m 0755 -D *.so $(prefix)/lib/x86_64-linux-gnu/deadbeef
+	$(foreach loc, $(LOCALES), install -d $(prefix)/share/locale/$(loc)/LC_MESSAGES;)
 	$(foreach loc, $(LOCALES), msgfmt gettext/$(loc)/deadbeef-lyricbar.po -o $(prefix)/share/locale/$(loc)/LC_MESSAGES/deadbeef-lyricbar.mo;)
 
 clean:

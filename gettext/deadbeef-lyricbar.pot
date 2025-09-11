@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-08-26 20:42+0200\n"
+"POT-Creation-Date: 2025-09-11 20:01+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -145,11 +145,11 @@ msgstr ""
 msgid "Edit"
 msgstr ""
 
-#: src/ui.cpp:84 src/utils.cpp:694
+#: src/ui.cpp:84 src/utils.cpp:696
 msgid "Unknown Artist"
 msgstr ""
 
-#: src/ui.cpp:85 src/utils.cpp:695
+#: src/ui.cpp:85 src/utils.cpp:697
 msgid "Unknown Title"
 msgstr ""
 
@@ -157,63 +157,63 @@ msgstr ""
 msgid "Error with lyrics file or metadata"
 msgstr ""
 
-#: src/utils.cpp:571
+#: src/utils.cpp:573
 msgid "Listened once"
 msgstr ""
 
-#: src/utils.cpp:575
+#: src/utils.cpp:577
 msgid "Listened "
 msgstr ""
 
-#: src/utils.cpp:577
+#: src/utils.cpp:579
 msgid " times"
 msgstr ""
 
-#: src/utils.cpp:583
+#: src/utils.cpp:585
 msgid "For the first time "
 msgstr ""
 
-#: src/utils.cpp:586 src/utils.cpp:600
+#: src/utils.cpp:588 src/utils.cpp:602
 msgid "at "
 msgstr ""
 
-#: src/utils.cpp:591
+#: src/utils.cpp:593
 msgid "Never listened before"
 msgstr ""
 
-#: src/utils.cpp:597
+#: src/utils.cpp:599
 msgid "For the last time the "
 msgstr ""
 
-#: src/utils.cpp:610
+#: src/utils.cpp:612
 msgid "There is one file in line"
 msgstr ""
 
-#: src/utils.cpp:614
+#: src/utils.cpp:616
 msgid "There are "
 msgstr ""
 
-#: src/utils.cpp:616
+#: src/utils.cpp:618
 msgid " files in line"
 msgstr ""
 
-#: src/utils.cpp:621
+#: src/utils.cpp:623
 msgid "Publisher: "
 msgstr ""
 
-#: src/utils.cpp:636
+#: src/utils.cpp:638
 msgid "Released date: "
 msgstr ""
 
-#: src/utils.cpp:642
+#: src/utils.cpp:644
 msgid "Genre: "
 msgstr ""
 
-#: src/utils.cpp:648
+#: src/utils.cpp:650
 msgid "Creators:"
 msgstr ""
 
-#: src/utils.cpp:715
+#: src/utils.cpp:717
 msgid "Loading..."
 msgstr ""
 
