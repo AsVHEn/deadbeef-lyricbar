@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-09-11 20:01+0200\n"
+"POT-Creation-Date: 2025-09-27 08:20+0200\n"
 "PO-Revision-Date: 2025-08-19 12:36+0200\n"
 "Last-Translator: AsVHEn <asvhen@gmail.com>\n"
 "Language-Team: Español \n"
@@ -17,131 +17,132 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: src/config_dialog.cpp:272
+#: src/config_dialog.cpp:267
 msgid "Background color: "
 msgstr "Color de fondo: "
 
-#: src/config_dialog.cpp:273
+#: src/config_dialog.cpp:268
 msgid "Text color: "
 msgstr "Color de texto: "
 
-#: src/config_dialog.cpp:274
+#: src/config_dialog.cpp:269
 msgid "Highlight color: "
 msgstr "Color resaltado: "
 
-#: src/config_dialog.cpp:275
+#: src/config_dialog.cpp:270
 msgid "Align: "
 msgstr "Alineación: "
 
-#: src/config_dialog.cpp:276
+#: src/config_dialog.cpp:271
 msgid "Save to: "
 msgstr "Guardar en: "
 
-#: src/config_dialog.cpp:277
+#: src/config_dialog.cpp:272
 msgid "Edge: "
 msgstr "Borde: "
 
-#: src/config_dialog.cpp:278
+#: src/config_dialog.cpp:273
 msgid "Highlight line height %: "
 msgstr "Altura línea resaltada en %: "
 
-#: src/config_dialog.cpp:279
+#: src/config_dialog.cpp:275
 msgid "Bold"
 msgstr "Negrita"
 
-#: src/config_dialog.cpp:280
+#: src/config_dialog.cpp:276
 msgid "Left"
 msgstr "Izquierda"
 
-#: src/config_dialog.cpp:281
+#: src/config_dialog.cpp:277
 msgid "Center"
 msgstr "Centro"
 
-#: src/config_dialog.cpp:282
+#: src/config_dialog.cpp:278
 msgid "Right"
 msgstr "Derecha"
 
-#: src/config_dialog.cpp:283
+#: src/config_dialog.cpp:279
 msgid "IDTag"
 msgstr "IDTag"
 
-#: src/config_dialog.cpp:284
+#: src/config_dialog.cpp:280
 msgid "File"
 msgstr "Archivo"
 
-#: src/config_dialog.cpp:285
+#: src/config_dialog.cpp:281
 msgid "No save"
 msgstr "No guardar"
 
-#: src/config_dialog.cpp:286
+#: src/config_dialog.cpp:283
 msgid "Config"
 msgstr "Configuración"
 
-#: src/config_dialog.cpp:571 src/config_dialog.cpp:581
+#: src/config_dialog.cpp:556 src/config_dialog.cpp:566
 msgid "Lyrics preview"
 msgstr "Ventana de previsualización de las letras"
 
-#: src/config_dialog.cpp:572
+#: src/config_dialog.cpp:557
 msgid "Artist: "
 msgstr "Artista: "
 
-#: src/config_dialog.cpp:573
+#: src/config_dialog.cpp:558
 msgid "Song: "
 msgstr "Canción: "
 
-#: src/config_dialog.cpp:574
+#: src/config_dialog.cpp:559
 msgid "Album "
 msgstr "Álbum: "
 
-#: src/config_dialog.cpp:575 src/config_dialog.cpp:576
+#: src/config_dialog.cpp:560 src/config_dialog.cpp:561
 msgid "Search"
 msgstr "Buscar"
 
-#: src/config_dialog.cpp:577
+#: src/config_dialog.cpp:562
 msgid "Artist"
 msgstr "Artista"
 
-#: src/config_dialog.cpp:578
+#: src/config_dialog.cpp:563
 msgid "Song"
 msgstr "Canción"
 
-#: src/config_dialog.cpp:579
+#: src/config_dialog.cpp:564
 msgid "Album"
 msgstr "Álbum"
 
-#: src/config_dialog.cpp:580
+#: src/config_dialog.cpp:565
 msgid "Source"
 msgstr "Origen"
 
-#: src/config_dialog.cpp:878
-msgid "Syncronization "
+#: src/config_dialog.cpp:856
+#, fuzzy
+msgid "Synchronization "
 msgstr "Sincronización "
 
-#: src/config_dialog.cpp:879
+#: src/config_dialog.cpp:857
 msgid "Sync or not "
 msgstr "Marcas de tiempo "
 
-#: src/config_dialog.cpp:880
+#: src/config_dialog.cpp:858
 msgid "+ 0.1 seconds"
 msgstr "+ 0.1 segundos"
 
-#: src/config_dialog.cpp:881
+#: src/config_dialog.cpp:859
 msgid "- 0.1 seconds"
 msgstr "- 0.1 segundos"
 
-#: src/config_dialog.cpp:882
+#: src/config_dialog.cpp:860
 msgid "Apply offset"
 msgstr "Aplicar offset"
 
-#: src/config_dialog.cpp:883
+#: src/config_dialog.cpp:861
 msgid "Insert timestamp"
 msgstr "Insertar marca de tiempo"
 
-#: src/config_dialog.cpp:884
+#: src/config_dialog.cpp:862
 msgid "Synced lyrics"
 msgstr "Letras sincronizadas"
 
-#: src/config_dialog.cpp:885
+#: src/config_dialog.cpp:863
 msgid "Edit"
 msgstr "Editar"
 

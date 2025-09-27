@@ -54,13 +54,13 @@ vector<string> music_163_get_songs(string song, string artist) {
 	string text_left = "text-left visitedlyr";
 	string lrc = "/lrc/";
 	string empty_search = "{\"songCount\":0}";
-
+    string twohundred_search = "{\"result\":{},\"code\":200}";
 	slist = curl_slist_append(slist, "User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:128.0) Gecko/20100101 Firefox/128.0");
 	slist = curl_slist_append(slist, "app-platform: WebPlayer");
 	string url = "https://music.163.com/api/search/get?s=" + urlencode(song) + "+" + urlencode(artist) + "&type=1&offset=0&sub=false&limit=5";
 	bulk_results = text_downloader(slist,url, "");
 	
-	if (bulk_results.find(empty_search) == std::string::npos){
+	if (bulk_results.find(empty_search) == std::string::npos && bulk_results.find(twohundred_search) == std::string::npos){
   	    string artist;
   	    string album;
         // Get all inside {"songs":[...]}

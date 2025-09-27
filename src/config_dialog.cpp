@@ -19,12 +19,10 @@
 #include <iostream>
 #include <string>
 
-
 // - Global
 
 //char *locale_lang = setlocale(LC_CTYPE, NULL);
 locale l("");
-
 
 // - Config widgets
 
@@ -108,7 +106,6 @@ GtkButton			*Forward;
 GtkFrame            *Sync_frame;
 GtkFrame            *Timestamps_frame;
 
-
 GtkTextBuffer		*refBuffer;
 
 //---------------------------------------------------------------------
@@ -150,7 +147,6 @@ void	on_Text_color_color_set (GtkColorButton *c) {
     std::snprintf(hexColor, sizeof hexColor, "#%02x%02x%02x", Red, Green, Blue);
 	deadbeef->conf_set_str("lyricbar.regularcolor", hexColor);
 	}
-
 
 void	on_Align_toggled(GtkRadioButton *b) {
 	
@@ -229,7 +225,6 @@ void set_chooser_color(GtkColorButton *chooser, const char *hexColor ){
 
 	const GdkRGBA* color = new GdkRGBA{Double_red,Double_green,Double_blue,Alpha};
 	gtk_color_chooser_set_rgba(GTK_COLOR_CHOOSER(chooser),color);
-	
 }
 
 extern "C"
@@ -248,8 +243,8 @@ int on_button_config (GtkMenuItem *menuitem, gpointer user_data) {
 	Highlight_color 		= GTK_COLOR_BUTTON(gtk_builder_get_object(builder, "Highlight_color"));
 	Text_color 				= GTK_COLOR_BUTTON(gtk_builder_get_object(builder, "Text_color"));
 	Highlight_line 			= GTK_SPIN_BUTTON(gtk_builder_get_object(builder, "Highlight_line"));
-	Check_bold				= GTK_CHECK_BUTTON(gtk_builder_get_object(builder, "Check_bold"));
 	Edge 					= GTK_SPIN_BUTTON(gtk_builder_get_object(builder, "Edge"));
+	Check_bold				= GTK_CHECK_BUTTON(gtk_builder_get_object(builder, "Check_bold"));
 	Align_left 				= GTK_RADIO_BUTTON(gtk_builder_get_object(builder, "Align_left"));
 	Align_center 			= GTK_RADIO_BUTTON(gtk_builder_get_object(builder, "Align_center"));
 	Align_right 			= GTK_RADIO_BUTTON(gtk_builder_get_object(builder, "Align_right"));
@@ -276,6 +271,7 @@ int on_button_config (GtkMenuItem *menuitem, gpointer user_data) {
 	gtk_label_set_label(Save_method_label, _("Save to: "));
 	gtk_label_set_label(Edge_label, _("Edge: "));
 	gtk_label_set_label(Highlight_line_label, _("Highlight line height %: "));
+	
 	gtk_button_set_label(GTK_BUTTON(Check_bold), _("Bold"));
 	gtk_button_set_label(GTK_BUTTON(Align_left), _("Left"));
 	gtk_button_set_label(GTK_BUTTON(Align_center), _("Center"));
@@ -283,6 +279,7 @@ int on_button_config (GtkMenuItem *menuitem, gpointer user_data) {
 	gtk_button_set_label(GTK_BUTTON(Save_IDTag), _("IDTag"));
 	gtk_button_set_label(GTK_BUTTON(Save_file), _("File"));
 	gtk_button_set_label(GTK_BUTTON(Save_no_save), _("No save"));
+	
 	gtk_window_set_title(ConfigWindow, _("Config"));
 
 	gtk_radio_button_join_group(Align_center, Align_left);
@@ -290,7 +287,6 @@ int on_button_config (GtkMenuItem *menuitem, gpointer user_data) {
 	gtk_radio_button_join_group(Save_file, Save_IDTag);
 	gtk_radio_button_join_group(Save_no_save, Save_IDTag);
 	
-
 //	Signals:
 	g_signal_connect(ConfigWindow, "destroy", G_CALLBACK(gtk_main_quit), NULL);
 	gtk_builder_connect_signals(builder, NULL);
@@ -308,7 +304,6 @@ int on_button_config (GtkMenuItem *menuitem, gpointer user_data) {
 	g_signal_connect(Cancel, "clicked", G_CALLBACK(on_Cancel_clicked), ConfigWindow);
 	g_signal_connect(Apply, "clicked", G_CALLBACK(on_Apply_clicked), NULL);
 
-
 //	Saved color to choosers:
 	set_chooser_color(Background_color, deadbeef->conf_get_str_fast("lyricbar.backgroundcolor", "#F6F6F6"));
 	set_chooser_color(Highlight_color, deadbeef->conf_get_str_fast("lyricbar.highlightcolor", "#571c1c"));
@@ -319,7 +314,6 @@ int on_button_config (GtkMenuItem *menuitem, gpointer user_data) {
 	gtk_spin_button_set_value(Edge, deadbeef->conf_get_int("lyricbar.border", 22));
 
 // Saved value to check button:
-
 	Check_bold_int_value = deadbeef->conf_get_int("lyricbar.bold", 1);
 
 	if (Check_bold_int_value == 1){
@@ -354,7 +348,6 @@ int on_button_config (GtkMenuItem *menuitem, gpointer user_data) {
 		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(Save_no_save), TRUE);
 	}
 	
-	
 	gtk_widget_show(GTK_WIDGET(ConfigWindow));
 	gtk_widget_grab_focus(GTK_WIDGET(ConfigWindow));
 	gtk_window_set_keep_above(ConfigWindow,1);
@@ -372,7 +365,6 @@ int on_button_config (GtkMenuItem *menuitem, gpointer user_data) {
 //---------------------------------------------------------------------
 //******************* SearchWindow ************************************
 //---------------------------------------------------------------------
-
 
 // Function to remove special characters.
 string specialtoplus(string text) {;
@@ -431,7 +423,6 @@ void on_Save_clicked (GtkButton *b, gpointer user_data) {
 	}
 }
 
-
 void	on_row_double_clicked (GtkButton *b) {
 	selected_lyrics = {"",false};
 	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(SongsTree));
@@ -445,10 +436,7 @@ void	on_row_double_clicked (GtkButton *b) {
 	gtk_tree_model_get(model, &iter, 3, &provider,  -1);
 	gtk_tree_model_get(model, &iter, 4, &value,  -1);
 
-	if (strcmp(provider, "Spotify") == 0){
-		selected_lyrics = spotify_lyrics_downloader(value);
-	}
-	else if (strcmp(provider, "LRCLIB") == 0){
+	if (strcmp(provider, "LRCLIB") == 0){
 		selected_lyrics = lrclib_lyrics_downloader(value);
 	}
 	else if (strcmp(provider, "MUSIC 163") == 0){
@@ -463,6 +451,9 @@ void	on_row_double_clicked (GtkButton *b) {
 	else if (strcmp(provider, "RCLyricsBand") == 0){
 		selected_lyrics = rclyricsband_lyrics_downloader(value);
 	}
+//	else if (strcmp(provider, "Spotify") == 0){
+//		selected_lyrics = spotify_lyrics_downloader(value);
+//	}
 
 	gtk_label_set_label(PreViewLyrics,selected_lyrics.lyrics.c_str());
 }
@@ -471,7 +462,6 @@ void thread_listener_Megalobiz(string text_song, string text_artist){
 	vector<string> megalobiz_songs = megalobiz_get_songs(text_song, text_artist);
 	populate_tree_view(megalobiz_songs, "Megalobiz");
 }
-
 
 void thread_listener_LrcLib(string text_song, string text_artist, string text_album){	
 	deadbeef->pl_lock();
@@ -485,9 +475,8 @@ void thread_listener_LrcLib(string text_song, string text_artist, string text_al
 }
 
 void thread_listener_Not_working_now(string text_song, string text_artist){
-	vector<string> spotify_songs = 	spotify_get_songs(text_song,text_artist);
-	populate_tree_view(spotify_songs, "Spotify");
-	
+//	vector<string> spotify_songs = 	spotify_get_songs(text_song,text_artist);
+//	populate_tree_view(spotify_songs, "Spotify");
 	vector<string> azlyrics_songs = azlyrics_get_songs(text_song, text_artist);
 	populate_tree_view(azlyrics_songs, "AZlyrics");
 }
@@ -503,7 +492,6 @@ void thread_listener_RCLyricsBand(string text_song, string text_artist){
 	
 }
 
-
 void on_Search_clicked (GtkButton *b) {
 	gtk_tree_store_clear(treeStore);
 	string text_artist, text_song, text_album;
@@ -518,17 +506,14 @@ void on_Search_clicked (GtkButton *b) {
 	thread RCLyricsBand(thread_listener_RCLyricsBand, text_song, text_artist);
 	thread Not_working_now(thread_listener_Not_working_now, text_song, text_artist);
 
-
 //	printf("Songs  = %s\n; ", songs);
 	//gtk_label_set_text (GTK_LABEL(Title), (const gchar* ) "OK");
-
 
 	LrcLib.detach();
 	Megalobiz.detach();
 	Music_163.detach();
     RCLyricsBand.detach();
     Not_working_now.detach();
-
 }
 
 void	on_Exit_clicked (GtkButton *b, gpointer user_data) {
@@ -603,7 +588,6 @@ int on_button_search (GtkMenuItem *menuitem, gpointer user_data) {
 	}
 	deadbeef->pl_unlock();
 	
-
 	gtk_tree_view_set_activate_on_single_click(SongsTree, FALSE);
 	gtk_tree_view_column_add_attribute(Column_artist, artists, "text", 0);
 	gtk_tree_view_column_add_attribute(Column_song, songs, "text", 1);
@@ -629,7 +613,6 @@ int on_button_search (GtkMenuItem *menuitem, gpointer user_data) {
 	
 	return EXIT_SUCCESS;
 }
-
 
 //---------------------------------------------------------------------
 //******************* \SearchWindow ***********************************
@@ -690,7 +673,6 @@ void update_text_textview(string text) {
 	gtk_text_buffer_delete(GTK_TEXT_BUFFER(refBuffer),&Start_iter, &Finish_iter);
 
 	gtk_text_buffer_insert(GTK_TEXT_BUFFER(refBuffer), &Start_iter,  text.c_str(), -1);
-
 }
 
 string get_text_textview() {
@@ -700,7 +682,6 @@ string get_text_textview() {
 	gtk_text_buffer_get_end_iter(GTK_TEXT_BUFFER(refBuffer), &Finish_iter);
 	string text = gtk_text_buffer_get_text(GTK_TEXT_BUFFER(refBuffer),&Start_iter, &Finish_iter, false);
 	return text;
-
 }
 
 int power(int base, int exponent) {
@@ -748,7 +729,6 @@ string apply_offset(string lyrics) {
 	}
 	return lyrics_delayed;
 }
-
 
 void	on_Backward_clicked (GtkButton *b) {
     deadbeef->pl_lock();
@@ -826,8 +806,6 @@ static gboolean on_timeout (gpointer user_data) {
 	return G_SOURCE_CONTINUE; /* or G_SOURCE_REMOVE when you want to stop */
 }
 
-
-
 void	on_Edit_cancel_clicked (GtkButton *b, gpointer user_data) {
 	gtk_window_close(GTK_WINDOW(user_data));
 }
@@ -875,7 +853,7 @@ int on_button_edit (GtkMenuItem *menuitem, gpointer user_data) {
 	Sync_frame              = GTK_FRAME(gtk_builder_get_object(builder, "Sync_frame"));
 	Timestamps_frame		= GTK_FRAME(gtk_builder_get_object(builder, "Timestamps_frame"));
 
-	gtk_frame_set_label(Sync_frame, _("Syncronization "));
+	gtk_frame_set_label(Sync_frame, _("Synchronization "));
 	gtk_frame_set_label(Timestamps_frame, _("Sync or not "));
 	gtk_button_set_label(GTK_BUTTON(Plus_time), _("+ 0.1 seconds"));
 	gtk_button_set_label(GTK_BUTTON(Minus_time), _("- 0.1 seconds"));
@@ -894,7 +872,6 @@ int on_button_edit (GtkMenuItem *menuitem, gpointer user_data) {
 
 	refBuffer = gtk_text_view_get_buffer(Text_view_lyrics_editor);
 	update_text_textview(track_lyrics.lyrics);
-
 
 //	Signals:
 	g_signal_connect(EditWindow, "destroy", G_CALLBACK(gtk_main_quit), NULL);

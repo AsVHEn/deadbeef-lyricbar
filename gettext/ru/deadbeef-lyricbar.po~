@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-09-11 19:55+0200\n"
+"POT-Creation-Date: 2025-09-27 08:17+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,203 +17,203 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: src/config_dialog.cpp:271
+#: src/config_dialog.cpp:272
 msgid "Background color: "
 msgstr ""
 
-#: src/config_dialog.cpp:272
+#: src/config_dialog.cpp:273
 msgid "Text color: "
 msgstr ""
 
-#: src/config_dialog.cpp:273
+#: src/config_dialog.cpp:274
 msgid "Highlight color: "
 msgstr ""
 
-#: src/config_dialog.cpp:274
+#: src/config_dialog.cpp:275
 msgid "Align: "
 msgstr ""
 
-#: src/config_dialog.cpp:275
+#: src/config_dialog.cpp:276
 msgid "Save to: "
 msgstr ""
 
-#: src/config_dialog.cpp:276
+#: src/config_dialog.cpp:277
 msgid "Edge: "
 msgstr ""
 
-#: src/config_dialog.cpp:277
+#: src/config_dialog.cpp:278
 msgid "Highlight line height %: "
 msgstr ""
 
-#: src/config_dialog.cpp:278
+#: src/config_dialog.cpp:279
 msgid "Bold"
 msgstr ""
 
-#: src/config_dialog.cpp:279
+#: src/config_dialog.cpp:280
 msgid "Left"
 msgstr ""
 
-#: src/config_dialog.cpp:280
+#: src/config_dialog.cpp:281
 msgid "Center"
 msgstr ""
 
-#: src/config_dialog.cpp:281
+#: src/config_dialog.cpp:282
 msgid "Right"
 msgstr ""
 
-#: src/config_dialog.cpp:282
+#: src/config_dialog.cpp:283
 msgid "IDTag"
 msgstr ""
 
-#: src/config_dialog.cpp:283
+#: src/config_dialog.cpp:284
 msgid "File"
 msgstr ""
 
-#: src/config_dialog.cpp:284
+#: src/config_dialog.cpp:285
 msgid "No save"
 msgstr ""
 
-#: src/config_dialog.cpp:285
+#: src/config_dialog.cpp:286
 msgid "Config"
 msgstr ""
 
-#: src/config_dialog.cpp:570 src/config_dialog.cpp:580
+#: src/config_dialog.cpp:569 src/config_dialog.cpp:579
 msgid "Lyrics preview"
 msgstr ""
 
-#: src/config_dialog.cpp:571
+#: src/config_dialog.cpp:570
 msgid "Artist: "
 msgstr ""
 
-#: src/config_dialog.cpp:572
+#: src/config_dialog.cpp:571
 msgid "Song: "
 msgstr ""
 
-#: src/config_dialog.cpp:573
+#: src/config_dialog.cpp:572
 msgid "Album "
 msgstr ""
 
-#: src/config_dialog.cpp:574 src/config_dialog.cpp:575
+#: src/config_dialog.cpp:573 src/config_dialog.cpp:574
 msgid "Search"
 msgstr ""
 
-#: src/config_dialog.cpp:576
+#: src/config_dialog.cpp:575
 msgid "Artist"
 msgstr ""
 
-#: src/config_dialog.cpp:577
+#: src/config_dialog.cpp:576
 msgid "Song"
 msgstr ""
 
-#: src/config_dialog.cpp:578
+#: src/config_dialog.cpp:577
 msgid "Album"
 msgstr ""
 
-#: src/config_dialog.cpp:579
+#: src/config_dialog.cpp:578
 msgid "Source"
 msgstr ""
 
-#: src/config_dialog.cpp:877
-msgid "Syncronization "
+#: src/config_dialog.cpp:876
+msgid "Synchronization "
 msgstr ""
 
-#: src/config_dialog.cpp:878
+#: src/config_dialog.cpp:877
 msgid "Sync or not "
 msgstr ""
 
-#: src/config_dialog.cpp:879
+#: src/config_dialog.cpp:878
 msgid "+ 0.1 seconds"
 msgstr ""
 
-#: src/config_dialog.cpp:880
+#: src/config_dialog.cpp:879
 msgid "- 0.1 seconds"
 msgstr ""
 
-#: src/config_dialog.cpp:881
+#: src/config_dialog.cpp:880
 msgid "Apply offset"
 msgstr ""
 
-#: src/config_dialog.cpp:882
+#: src/config_dialog.cpp:881
 msgid "Insert timestamp"
 msgstr ""
 
-#: src/config_dialog.cpp:883
+#: src/config_dialog.cpp:882
 msgid "Synced lyrics"
 msgstr ""
 
-#: src/config_dialog.cpp:884
+#: src/config_dialog.cpp:883
 msgid "Edit"
 msgstr ""
 
-#: src/ui.cpp:84 src/utils.cpp:695
+#: src/ui.cpp:84 src/utils.cpp:696
 msgid "Unknown Artist"
 msgstr ""
 
-#: src/ui.cpp:85 src/utils.cpp:696
+#: src/ui.cpp:85 src/utils.cpp:697
 msgid "Unknown Title"
 msgstr ""
 
-#: src/utils.cpp:83
+#: src/utils.cpp:84
 msgid "Error with lyrics file or metadata"
 msgstr ""
 
-#: src/utils.cpp:572
+#: src/utils.cpp:573
 msgid "Listened once"
 msgstr ""
 
-#: src/utils.cpp:576
+#: src/utils.cpp:577
 msgid "Listened "
 msgstr ""
 
-#: src/utils.cpp:578
+#: src/utils.cpp:579
 msgid " times"
 msgstr ""
 
-#: src/utils.cpp:584
+#: src/utils.cpp:585
 msgid "For the first time "
 msgstr ""
 
-#: src/utils.cpp:587 src/utils.cpp:601
+#: src/utils.cpp:588 src/utils.cpp:602
 msgid "at "
 msgstr ""
 
-#: src/utils.cpp:592
+#: src/utils.cpp:593
 msgid "Never listened before"
 msgstr ""
 
-#: src/utils.cpp:598
+#: src/utils.cpp:599
 msgid "For the last time the "
 msgstr ""
 
-#: src/utils.cpp:611
+#: src/utils.cpp:612
 msgid "There is one file in line"
 msgstr ""
 
-#: src/utils.cpp:615
+#: src/utils.cpp:616
 msgid "There are "
 msgstr ""
 
-#: src/utils.cpp:617
+#: src/utils.cpp:618
 msgid " files in line"
 msgstr ""
 
-#: src/utils.cpp:622
+#: src/utils.cpp:623
 msgid "Publisher: "
 msgstr ""
 
-#: src/utils.cpp:637
+#: src/utils.cpp:638
 msgid "Released date: "
 msgstr ""
 
-#: src/utils.cpp:643
+#: src/utils.cpp:644
 msgid "Genre: "
 msgstr ""
 
-#: src/utils.cpp:649
+#: src/utils.cpp:650
 msgid "Creators:"
 msgstr ""
 
-#: src/utils.cpp:716
+#: src/utils.cpp:717
 msgid "Loading..."
 msgstr ""
 
