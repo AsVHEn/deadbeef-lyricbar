@@ -8,6 +8,9 @@
 #include <gtkmm.h>
 #include <time.h>
 #include <string>
+#include <future>
+#include <chrono>
+#include <atomic>
 
 using namespace std;
 using namespace Gtk;
@@ -24,7 +27,10 @@ const DB_playItem_t *last;
 struct timespec tss = {0, 100000000};
 
 // TODO: eliminate all the global objects, as their initialization is not well defined
-	
+
+// Widget destruction flag - set to true when widgets are being destroyed
+static atomic<bool> widgets_destroyed{false};
+
 static TextView *lyricView;
 static ScrolledWindow *lyricbar;
 static RefPtr<TextBuffer> refBuffer;
@@ -37,8 +43,35 @@ bool isValidHexaCode(string str) {
 }
 
 // "Size" lyrics to be able to make lines "dissapear" on top.
-vector<int> sizelines(DB_playItem_t * track, string lyrics) {
-	set_lyrics(track, lyrics,"","","");
+// INTERNAL: This function MUST only be called from the main GTK thread!
+static vector<int> sizelines_internal(DB_playItem_t * track, string lyrics) {
+	// Check if widgets are being destroyed
+	if (widgets_destroyed.load()) {
+		return vector<int>();
+	}
+
+	// Validate widget pointers
+	if (!lyricView || !lyricbar || !refBuffer) {
+		return vector<int>();
+	}
+
+	if (!is_playing(track)) {
+		return vector<int>();
+	}
+
+	string artist, title;
+	deadbeef->pl_lock();
+	artist = deadbeef->pl_find_meta(track, "artist") ?: _("Unknown Artist");
+	title  = deadbeef->pl_find_meta(track, "title") ?: _("Unknown Title");
+	deadbeef->pl_unlock();
+
+	refBuffer->erase(refBuffer->begin(), refBuffer->end());
+	refBuffer->insert_with_tags(refBuffer->begin(), title, tagsTitle);
+	if (g_utf8_validate(lyrics.c_str(),-1,NULL)){
+		refBuffer->insert_with_tags(refBuffer->end(), string{"\n"} + artist + "\n\n", tagsArtist);
+		refBuffer->insert_with_tags(refBuffer->end(), lyrics, tagsNosyncline);
+	}
+
 //	std::cout << "Sizelines" << "\n";
 	death_signal = 1;
 	int sumatory = 0;
@@ -47,6 +80,13 @@ vector<int> sizelines(DB_playItem_t * track, string lyrics) {
 
 //	I didn't found another way to be sure lyrics are displayed than wait millisenconds with nanosleep.
 	nanosleep(&tss, NULL);
+
+	// Re-check after sleep
+	if (widgets_destroyed.load() || !lyricView || !lyricbar || !refBuffer) {
+		death_signal = 0;
+		return vector<int>();
+	}
+
 	deadbeef->pl_lock();
 	values.push_back(lyricbar->get_allocation().get_height()*(deadbeef->conf_get_int("lyricbar.vpostion", 50))/100);
 	deadbeef->pl_unlock();
@@ -73,8 +113,44 @@ vector<int> sizelines(DB_playItem_t * track, string lyrics) {
 	return values;
 }
 
+// Thread-safe wrapper for sizelines - can be called from any thread
+vector<int> sizelines(DB_playItem_t * track, string lyrics) {
+	// Check if widgets are destroyed before even trying
+	if (widgets_destroyed.load()) {
+		return vector<int>();
+	}
+
+	// Create promise/future for result
+	auto promise_ptr = make_shared<promise<vector<int>>>();
+	future<vector<int>> result_future = promise_ptr->get_future();
+
+	// Marshal to main GTK thread
+	signal_idle().connect_once([track, lyrics, promise_ptr]() {
+		try {
+			vector<int> result = sizelines_internal(track, lyrics);
+			promise_ptr->set_value(result);
+		} catch (...) {
+			// If any exception occurs, return empty vector
+			promise_ptr->set_value(vector<int>());
+		}
+	});
+
+	// Wait for result with timeout (5 seconds)
+	if (result_future.wait_for(chrono::seconds(5)) == future_status::timeout) {
+		// Timeout - return empty vector
+		return vector<int>();
+	}
+
+	return result_future.get();
+}
+
 void set_lyrics(DB_playItem_t *track, string past, string present, string future, string padding) {
 	signal_idle().connect_once([track, past, present, future, padding ] {
+
+		// Check if widgets are destroyed
+		if (widgets_destroyed.load() || !refBuffer) {
+			return;
+		}
 
 		if (!is_playing(track)) {
 			return;
@@ -300,6 +376,14 @@ int message_handler(struct ddb_gtkui_widget_s*, uint32_t id, uintptr_t ctx, uint
 
 extern "C"
 void lyricbar_destroy() {
+	// Set destruction flag FIRST to prevent any new GTK operations
+	widgets_destroyed.store(true);
+
+	// Give pending operations a moment to check the flag
+	struct timespec brief_wait = {0, 10000000}; // 10ms
+	nanosleep(&brief_wait, NULL);
+
+	// Now safe to delete widgets
 	delete lyricbar;
 	delete lyricView;
 	tagsArtist.clear();
@@ -315,4 +399,7 @@ void lyricbar_destroy() {
 	tagRightmargin.reset();
 	tagLeftmargin.reset();
 	refBuffer.reset();
+
+	// Reset flag for potential re-initialization
+	widgets_destroyed.store(false);
 }
