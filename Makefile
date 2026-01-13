@@ -1,5 +1,5 @@
 CFLAGS+=-std=c99 -Wall $(COPTS) -D_GNU_SOURCE -fPIC -fvisibility=hidden -flto=auto
-CXXFLAGS+=-std=c++14 -Wall -O2 -fPIC -fvisibility=hidden -flto=auto
+CXXFLAGS+=-std=c++14 -Wall $(CXXOPTS) -fPIC -fvisibility=hidden -flto=auto
 LIBFLAGS=`pkg-config --cflags $(GTKMM) $(GTK)`
 LIBS=`pkg-config --libs $(GTKMM) $(GTK)`
 LCURL=-lcurl
@@ -38,7 +38,7 @@ update_po:
 
 lyricbar: resource.h config_dialog.o lrclrclib.o lrcmusic163.o megalobiz.o azlyrics.o rclyricsband.o ui.o utils.o resources.o main.o lrcspotify.o
 	$(if $(LYRICBAR),, $(error You should only access this target via "gtk3" or "gtk2"))
-	$(CXX) -rdynamic -shared $(LDFLAGS) main.o resources.o config_dialog.o lrcspotify.o lrclrclib.o lrcmusic163.o megalobiz.o azlyrics.o rclyricsband.o ui.o utils.o $(LCURL) -o $(LYRICBAR) $(LIBS)
+	$(CXX) -g -rdynamic -shared $(LDFLAGS) main.o resources.o config_dialog.o lrcspotify.o lrclrclib.o lrcmusic163.o megalobiz.o azlyrics.o rclyricsband.o ui.o utils.o $(LCURL) -o $(LYRICBAR) $(LIBS)
 
 lrcspotify.o: src/sources/lrcspotify.cpp src/sources/lrcspotify.h
 	$(CXX) src/sources/lrcspotify.cpp -c $(LIBFLAGS) $(CXXFLAGS) -lcurl

@@ -529,9 +529,20 @@ void set_info(DB_playItem_t *track) {
     const char *original_date = deadbeef->pl_find_meta (track, "ORIGINAL_RELEASE_TIME");
     const char *genre = deadbeef->pl_find_meta (track, "GENRE");
     
+    
+    
     //INVOLVED_PEOPLE_LIST and GENRE are a little more tricky to retrieve.
     DB_metaInfo_t *involved_people_meta = deadbeef->pl_meta_for_key (track, "InvolvedPeople");
+    deadbeef->pl_unlock();
     
+    deadbeef->pl_lock();
+	int playcount = deadbeef->playqueue_get_count();
+	int bitrate = deadbeef->streamer_get_apx_bitrate();
+	deadbeef->pl_unlock();
+
+	while (bitrate == -1){
+		bitrate = deadbeef->streamer_get_apx_bitrate();
+	}
     
     void *involved_buffer = malloc(100000);
     char *p2 = (char *)involved_buffer;
@@ -555,14 +566,6 @@ void set_info(DB_playItem_t *track) {
         involved_people = p2;
     }
     
-	int playcount = deadbeef->playqueue_get_count();
-	int bitrate = deadbeef->streamer_get_apx_bitrate();
-	while (bitrate == -1){
-		bitrate = deadbeef->streamer_get_apx_bitrate();
-	}
-
-    deadbeef->pl_unlock();
-
 	info.append("\n \n");
 
 	if (count == -1){
@@ -782,8 +785,9 @@ int remove_from_cache_action(DB_plugin_action_t *, ddb_action_context_t ctx) {
 				if (deadbeef->pl_is_selected (current)) {
 					const char *artist = deadbeef->pl_find_meta(current, "artist");
 					const char *title  = deadbeef->pl_find_meta(current, "title");
-					if (is_cached(artist, title))
+					if (is_cached(artist, title)){
 						remove(cached_filename(artist, title).c_str());
+					}
 				}
 				DB_playItem_t *next = deadbeef->pl_get_next(current, PL_MAIN);
 				deadbeef->pl_unlock();

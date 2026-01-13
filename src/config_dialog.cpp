@@ -372,13 +372,17 @@ string specialtoplus(string text) {;
 	string non_diacritic = "AAAAAAECEEEEIIIIDNOOOOOx0UUUUYPsaaaaaaeceeeeiiiiOnooooo/0uuuuypy";
 	string result;
 
-	for(unsigned i = 0; i < text.size(); i++)
-    {
+	for(unsigned i = 0; i < text.size(); i++){        
         if( (text[i] < 'A' ||  text[i] > 'Z') &&  (text[i] < 'a' ||  text[i] > 'z') &&  (text[i] < '0' ||  text[i] > '9') && (text[i]!='\'')) { 
-            if ((text[i] < 0) && (text[i] != -61)){
-                result = result + non_diacritic[text[i] + 127];
+            if ((text[i] < 0) && (text[i] != -61) && (text[i] != -62)){
+                if ((0 <= text[i] + 127) && (text[i] + 127 <= 63)){
+                    result = result + non_diacritic[text[i] + 127];
+                }
+                else{
+                    return text;
+                }
             }
-            else if (text[i] != -61){
+            else if (text[i] != -61  && (text[i] != -62)){
                 result = result + '+';
             }
         }
@@ -495,11 +499,10 @@ void thread_listener_RCLyricsBand(string text_song, string text_artist){
 void on_Search_clicked (GtkButton *b) {
 	gtk_tree_store_clear(treeStore);
 	string text_artist, text_song, text_album;
-
 	text_artist = specialtoplus(gtk_entry_get_text(Artist_input));
 	text_song = specialtoplus(gtk_entry_get_text(Song_input));
 	text_album = specialtoplus(gtk_entry_get_text(Album_input));
-
+	
 	thread LrcLib(thread_listener_LrcLib, text_song, text_artist, text_album);
 	thread Megalobiz(thread_listener_Megalobiz, text_song, text_artist);
 	thread Music_163(thread_listener_Music_163, text_song, text_artist);

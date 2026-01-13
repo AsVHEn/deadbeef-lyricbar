@@ -5,14 +5,12 @@
 #include <vector>
 #include <typeinfo>
 #include <fstream>
+#include <string>
+#include <algorithm>
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <string>
 #include <curl/curl.h>
-
-
-#include <algorithm>
 
 using namespace std;
 
@@ -74,7 +72,6 @@ struct parsed_lyrics lrclib_lyrics_downloader(string trackid) {
   	lyrics = split(text_downloader(slist,url, ""),"{");
 	lyrics_split = split(lyrics[1],"\",\"syncedLyrics\":\"");
 	string string_lyrics = "";
-//	cout << lyrics_split[0] << "\n";
 	
 	if (lyrics_split.size() > 1) {
 	    string_lyrics = replace_string(lyrics_split[1], "\\n", "\n");
@@ -82,7 +79,7 @@ struct parsed_lyrics lrclib_lyrics_downloader(string trackid) {
     }
     else {
         synced = false;
-        lyrics_split = split(lyrics_split[0],"\"plainLyrics\":\"") ;
+        lyrics_split = split(lyrics_split[0],"\"plainLyrics\":\"");
         string_lyrics = "";
         if (lyrics_split.size() > 1){
             string_lyrics = lyrics_split[1].substr(0, lyrics_split[1].size()-22);

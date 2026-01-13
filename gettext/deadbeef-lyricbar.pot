@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-09-27 08:34+0200\n"
+"POT-Creation-Date: 2026-01-09 15:01+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -77,79 +77,79 @@ msgstr ""
 msgid "Config"
 msgstr ""
 
-#: src/config_dialog.cpp:556 src/config_dialog.cpp:566
+#: src/config_dialog.cpp:559 src/config_dialog.cpp:569
 msgid "Lyrics preview"
 msgstr ""
 
-#: src/config_dialog.cpp:557
+#: src/config_dialog.cpp:560
 msgid "Artist: "
 msgstr ""
 
-#: src/config_dialog.cpp:558
+#: src/config_dialog.cpp:561
 msgid "Song: "
 msgstr ""
 
-#: src/config_dialog.cpp:559
+#: src/config_dialog.cpp:562
 msgid "Album "
 msgstr ""
 
-#: src/config_dialog.cpp:560 src/config_dialog.cpp:561
+#: src/config_dialog.cpp:563 src/config_dialog.cpp:564
 msgid "Search"
 msgstr ""
 
-#: src/config_dialog.cpp:562
+#: src/config_dialog.cpp:565
 msgid "Artist"
 msgstr ""
 
-#: src/config_dialog.cpp:563
+#: src/config_dialog.cpp:566
 msgid "Song"
 msgstr ""
 
-#: src/config_dialog.cpp:564
+#: src/config_dialog.cpp:567
 msgid "Album"
 msgstr ""
 
-#: src/config_dialog.cpp:565
+#: src/config_dialog.cpp:568
 msgid "Source"
 msgstr ""
 
-#: src/config_dialog.cpp:856
+#: src/config_dialog.cpp:859
 msgid "Synchronization "
 msgstr ""
 
-#: src/config_dialog.cpp:857
+#: src/config_dialog.cpp:860
 msgid "Sync or not "
 msgstr ""
 
-#: src/config_dialog.cpp:858
+#: src/config_dialog.cpp:861
 msgid "+ 0.1 seconds"
 msgstr ""
 
-#: src/config_dialog.cpp:859
+#: src/config_dialog.cpp:862
 msgid "- 0.1 seconds"
 msgstr ""
 
-#: src/config_dialog.cpp:860
+#: src/config_dialog.cpp:863
 msgid "Apply offset"
 msgstr ""
 
-#: src/config_dialog.cpp:861
+#: src/config_dialog.cpp:864
 msgid "Insert timestamp"
 msgstr ""
 
-#: src/config_dialog.cpp:862
+#: src/config_dialog.cpp:865
 msgid "Synced lyrics"
 msgstr ""
 
-#: src/config_dialog.cpp:863
+#: src/config_dialog.cpp:866
 msgid "Edit"
 msgstr ""
 
-#: src/ui.cpp:84 src/utils.cpp:696
+#: src/ui.cpp:84 src/utils.cpp:699
 msgid "Unknown Artist"
 msgstr ""
 
-#: src/ui.cpp:85 src/utils.cpp:697
+#: src/ui.cpp:85 src/utils.cpp:700
 msgid "Unknown Title"
 msgstr ""
 
@@ -157,63 +157,63 @@ msgstr ""
 msgid "Error with lyrics file or metadata"
 msgstr ""
 
-#: src/utils.cpp:573
+#: src/utils.cpp:576
 msgid "Listened once"
 msgstr ""
 
-#: src/utils.cpp:577
+#: src/utils.cpp:580
 msgid "Listened "
 msgstr ""
 
-#: src/utils.cpp:579
+#: src/utils.cpp:582
 msgid " times"
 msgstr ""
 
-#: src/utils.cpp:585
+#: src/utils.cpp:588
 msgid "For the first time "
 msgstr ""
 
-#: src/utils.cpp:588 src/utils.cpp:602
+#: src/utils.cpp:591 src/utils.cpp:605
 msgid "at "
 msgstr ""
 
-#: src/utils.cpp:593
+#: src/utils.cpp:596
 msgid "Never listened before"
 msgstr ""
 
-#: src/utils.cpp:599
+#: src/utils.cpp:602
 msgid "For the last time the "
 msgstr ""
 
-#: src/utils.cpp:612
+#: src/utils.cpp:615
 msgid "There is one file in line"
 msgstr ""
 
-#: src/utils.cpp:616
+#: src/utils.cpp:619
 msgid "There are "
 msgstr ""
 
-#: src/utils.cpp:618
+#: src/utils.cpp:621
 msgid " files in line"
 msgstr ""
 
-#: src/utils.cpp:623
+#: src/utils.cpp:626
 msgid "Publisher: "
 msgstr ""
 
-#: src/utils.cpp:638
+#: src/utils.cpp:641
 msgid "Released date: "
 msgstr ""
 
-#: src/utils.cpp:644
+#: src/utils.cpp:647
 msgid "Genre: "
 msgstr ""
 
-#: src/utils.cpp:650
+#: src/utils.cpp:653
 msgid "Creators:"
 msgstr ""
 
-#: src/utils.cpp:717
+#: src/utils.cpp:720
 msgid "Loading..."
 msgstr ""
 
