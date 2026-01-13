@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-09-27 08:20+0200\n"
+"POT-Creation-Date: 2026-01-13 13:30+0100\n"
 "PO-Revision-Date: 2025-08-19 12:36+0200\n"
 "Last-Translator: AsVHEn <asvhen@gmail.com>\n"
 "Language-Team: Español \n"
@@ -146,11 +146,11 @@ msgstr "Letras sincronizadas"
 msgid "Edit"
 msgstr "Editar"
 
-#: src/ui.cpp:84 src/utils.cpp:696
+#: src/ui.cpp:64 src/ui.cpp:160 src/utils.cpp:696
 msgid "Unknown Artist"
 msgstr "Artista desconocido"
 
-#: src/ui.cpp:85 src/utils.cpp:697
+#: src/ui.cpp:65 src/ui.cpp:161 src/utils.cpp:697
 msgid "Unknown Title"
 msgstr "Título desconocido"
 
