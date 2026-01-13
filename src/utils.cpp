@@ -154,59 +154,41 @@ struct sync lyric2vector( string lyrics){
 	return goodlyrics;
 }
 
-// Function to scroll and remark line:
+// Function to scroll and remark line - SIMPLIFIED VERSION
 void write_synced( DB_playItem_t *it){
 	float pos = deadbeef->streamer_get_playpos();
-	string past = "";
-	string present = "";
-	string future = "";
-	string padding = "";
-	int presentpos = 0;
-	int minimuntopad = 0;
+	int current_line_index = -1;
 
-	if ( lrc.position.size() > 2) {
+	// Track song changes to reset state
+	static DB_playItem_t *last_track = nullptr;
+	static int last_line_index = -1;
 
-		for (unsigned i = 0; i < lrc.position.size()-2; i++){
-			if (lrc.position[i] < pos){
-				if (lrc.position[i+1] > pos){
-					present = " " + lrc.synclyrics[i] + " " + "\n";
-					presentpos = i;
-				}
-			}
-			else if (pos < lrc.position[i]){
-					future.append(lrc.synclyrics[i] + "\n");
-			}
-		}
-
-		//Add padding variable at beginning of lyrics to show to make scroll with first lines.
-		if (!linessizes.empty()){
-			for  (int j = 0; j < (int)((lrc.position[linessizes[1]+1] - pos)/(lrc.position[linessizes[1]+1])*linessizes[0]); j++){
-				padding.append("\n");
-			}
-		}
-
-//cout << "Present position: " << presentpos << " pos: " << pos << " LRC position[1] +1: " << lrc.position[linessizes[1]+1] << " linessizes[0]: " << linessizes[0] << " Operacion: " << ((lrc.position[linessizes[1]+1] - pos)/(lrc.position[linessizes[1]+1])*linessizes[0]) <<"\n";
-
-		//Add padding variable at beginning of lyrics to show to make scroll when removing a past line.
-		if (((!linessizes.empty()) && (presentpos - linessizes[1]) > 0)){
-			minimuntopad = presentpos - linessizes[1];
-			for  (int j = 0 ; j < (int)(((lrc.position[presentpos +1] - pos)/(lrc.position[presentpos+1] -lrc.position[presentpos]))*(linessizes[presentpos - linessizes[1] + 5] -1)); j++){
-				padding.append("\n");
-			}
-		}
-
-		//Removing first past lyrics lines to make scroll.
-		for (unsigned i = minimuntopad; lrc.position[i+1] < pos && i < lrc.position.size()-2; i++){
-			past.append(lrc.synclyrics[i] + "\n");
-		}
-	set_lyrics(it, past, present, future, padding);
+	// Reset on song change
+	if (it != last_track) {
+		last_track = it;
+		last_line_index = -1;  // Force update on first line
 	}
 
-	else{
-		past = " ";
-		present = " ";
-		future = " ";
-		set_lyrics(it, past, present, future, padding);
+	if (lrc.position.size() > 2) {
+		// Find which line should be playing now
+		for (unsigned i = 0; i < lrc.position.size()-2; i++){
+			if (lrc.position[i] <= pos && lrc.position[i+1] > pos){
+				current_line_index = i;
+				break;
+			}
+		}
+
+		// Only update if line changed (avoid unnecessary redraws)
+		if (current_line_index != last_line_index) {
+			last_line_index = current_line_index;
+
+			// Use new scroll function - pass all lyrics and current index
+			set_lyrics_with_scroll(it, lrc.synclyrics, current_line_index);
+		}
+	}
+	else {
+		// No lyrics or error
+		set_lyrics(it, " ", " ", " ", "");
 	}
 }
 
@@ -223,7 +205,7 @@ void thread_listener(DB_playItem_t *track){
 	}
 }
 
-// Main loop thread caller.
+// Main loop thread caller - SIMPLIFIED (no longer needs sizelines)
 void chopset_lyrics(DB_playItem_t *track, string lyrics){
 //	cout << "Chopset lyrics" "\n";
 	lrc = lyric2vector(lyrics);
@@ -234,13 +216,12 @@ void chopset_lyrics(DB_playItem_t *track, string lyrics){
 	lrc.position.push_back((float)length);
 	lrc.synclyrics.push_back("\n");
 	lrc.synclyrics.push_back("\n");
-	string prelyrics = "";
-	for (unsigned i = 0; i < lrc.synclyrics.size()-2; i++){
-			prelyrics.append(lrc.synclyrics[i] + "\n");
-	}
-	if (track == it){
-		linessizes = sizelines(track, prelyrics);
-	}
+
+	// No longer need sizelines() - scrolling is handled by GTK scroll_to()
+
+	// FORCE initial display - show all lyrics with no line highlighted
+	// This ensures lyrics are visible immediately when song starts
+	set_lyrics_with_scroll(it, lrc.synclyrics, -1);
 
 	mtx.lock();
 	thread t1(thread_listener, it);
@@ -675,7 +656,7 @@ void set_info(DB_playItem_t *track) {
 
 //Main function:
 void update_lyrics(void *tr) {
-	linessizes.clear();
+	// linessizes no longer needed - removed
 	DB_playItem_t *track = static_cast<DB_playItem_t*>(tr);
 	struct parsed_lyrics meta_lyrics = get_lyrics_from_metadata(track);
 	if (meta_lyrics.lyrics != "") {

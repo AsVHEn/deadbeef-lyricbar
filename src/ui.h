@@ -19,6 +19,8 @@ bool isValidHexaCode(string str);
 
 void set_lyrics(DB_playItem_t *track, string past, string present, string future, string padding);
 
+void set_lyrics_with_scroll(DB_playItem_t *track, const vector<string>& all_lyrics, int current_line_index);
+
 void sync_or_unsync(bool syncedlyrics);
 
 vector<int> sizelines(DB_playItem_t *track, string lyrics);
