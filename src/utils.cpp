@@ -179,7 +179,7 @@ void write_synced( DB_playItem_t *it){
 		}
 
 		//Add padding variable at beginning of lyrics to show to make scroll with first lines.
-		if (!linessizes.empty()){
+		if (!linessizes.empty() && (size_t)(linessizes[1]+1) < lrc.position.size()){
 			for  (int j = 0; j < (int)((lrc.position[linessizes[1]+1] - pos)/(lrc.position[linessizes[1]+1])*linessizes[0]); j++){
 				padding.append("\n");
 			}
@@ -188,7 +188,7 @@ void write_synced( DB_playItem_t *it){
 //cout << "Present position: " << presentpos << " pos: " << pos << " LRC position[1] +1: " << lrc.position[linessizes[1]+1] << " linessizes[0]: " << linessizes[0] << " Operacion: " << ((lrc.position[linessizes[1]+1] - pos)/(lrc.position[linessizes[1]+1])*linessizes[0]) <<"\n";
 
 		//Add padding variable at beginning of lyrics to show to make scroll when removing a past line.
-		if (((!linessizes.empty()) && (presentpos - linessizes[1]) > 0)){
+		if (((!linessizes.empty()) && (presentpos - linessizes[1]) > 0) && (size_t)(presentpos+1) < lrc.position.size()){
 			minimuntopad = presentpos - linessizes[1];
 			for  (int j = 0 ; j < (int)(((lrc.position[presentpos +1] - pos)/(lrc.position[presentpos+1] -lrc.position[presentpos]))*(linessizes[presentpos - linessizes[1] + 5] -1)); j++){
 				padding.append("\n");
@@ -196,7 +196,7 @@ void write_synced( DB_playItem_t *it){
 		}
 
 		//Removing first past lyrics lines to make scroll.
-		for (unsigned i = minimuntopad; lrc.position[i+1] < pos && i < lrc.position.size()-2; i++){
+		for (unsigned i = minimuntopad; i < lrc.position.size()-2 && lrc.position[i+1] < pos; i++){
 			past.append(lrc.synclyrics[i] + "\n");
 		}
 	set_lyrics(it, past, present, future, padding);
