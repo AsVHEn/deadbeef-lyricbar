@@ -1,5 +1,5 @@
 CFLAGS+=-std=c99 -Wall $(COPTS) -D_GNU_SOURCE -fPIC -fvisibility=hidden -flto=auto
-CXXFLAGS+=-std=c++14 -Wall $(CXXOPTS) -fPIC -fvisibility=hidden -flto=auto
+CXXFLAGS+=-std=c++23 -Wall $(CXXOPTS) -fPIC -fvisibility=hidden -flto=auto
 LIBFLAGS=`pkg-config --cflags $(GTKMM) $(GTK)`
 LIBS=`pkg-config --libs $(GTKMM) $(GTK)`
 LCURL=-lcurl

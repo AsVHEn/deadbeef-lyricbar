@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-01-08 13:24+0100\n"
+"POT-Creation-Date: 2026-02-27 21:58+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -145,75 +145,75 @@ msgstr ""
 msgid "Edit"
 msgstr ""
 
-#: src/ui.cpp:84 src/utils.cpp:699
+#: src/ui.cpp:84 src/utils.cpp:717
 msgid "Unknown Artist"
 msgstr ""
 
-#: src/ui.cpp:85 src/utils.cpp:700
+#: src/ui.cpp:85 src/utils.cpp:718
 msgid "Unknown Title"
 msgstr ""
 
-#: src/utils.cpp:84
+#: src/utils.cpp:83
 msgid "Error with lyrics file or metadata"
 msgstr ""
 
-#: src/utils.cpp:576
+#: src/utils.cpp:594
 msgid "Listened once"
 msgstr ""
 
-#: src/utils.cpp:580
+#: src/utils.cpp:598
 msgid "Listened "
 msgstr ""
 
-#: src/utils.cpp:582
+#: src/utils.cpp:600
 msgid " times"
 msgstr ""
 
-#: src/utils.cpp:588
+#: src/utils.cpp:606
 msgid "For the first time "
 msgstr ""
 
-#: src/utils.cpp:591 src/utils.cpp:605
+#: src/utils.cpp:609 src/utils.cpp:623
 msgid "at "
 msgstr ""
 
-#: src/utils.cpp:596
+#: src/utils.cpp:614
 msgid "Never listened before"
 msgstr ""
 
-#: src/utils.cpp:602
+#: src/utils.cpp:620
 msgid "For the last time the "
 msgstr ""
 
-#: src/utils.cpp:615
+#: src/utils.cpp:633
 msgid "There is one file in line"
 msgstr ""
 
-#: src/utils.cpp:619
+#: src/utils.cpp:637
 msgid "There are "
 msgstr ""
 
-#: src/utils.cpp:621
+#: src/utils.cpp:639
 msgid " files in line"
 msgstr ""
 
-#: src/utils.cpp:626
+#: src/utils.cpp:644
 msgid "Publisher: "
 msgstr ""
 
-#: src/utils.cpp:641
+#: src/utils.cpp:659
 msgid "Released date: "
 msgstr ""
 
-#: src/utils.cpp:647
+#: src/utils.cpp:665
 msgid "Genre: "
 msgstr ""
 
-#: src/utils.cpp:653
+#: src/utils.cpp:671
 msgid "Creators:"
 msgstr ""
 
-#: src/utils.cpp:720
+#: src/utils.cpp:738
 msgid "Loading..."
 msgstr ""
 
@@ -270,21 +270,37 @@ msgid "VOICE: "
 msgstr ""
 
 #: src/sources/lrcmusic163.cpp:171
-msgid "GUITAR: "
+msgid "HARMONY/BACKING VOCALS: "
 msgstr ""
 
 #: src/sources/lrcmusic163.cpp:172
-msgid "KEYBOARDS: "
+msgid "GUITAR: "
 msgstr ""
 
 #: src/sources/lrcmusic163.cpp:173
-msgid "DRUMS: "
+msgid "KEYBOARDS: "
 msgstr ""
 
 #: src/sources/lrcmusic163.cpp:174
-msgid "PROGRAMMING: "
+msgid "DRUMS: "
 msgstr ""
 
 #: src/sources/lrcmusic163.cpp:175
+msgid "PROGRAMMING: "
+msgstr ""
+
+#: src/sources/lrcmusic163.cpp:176
 msgid "MIX ASSISTANT: "
+msgstr ""
+
+#: src/sources/lrcmusic163.cpp:177
+msgid "ARTIST: "
+msgstr ""
+
+#: src/sources/lrcmusic163.cpp:178
+msgid "SONGWRITER: "
+msgstr ""
+
+#: src/sources/lrcmusic163.cpp:179
+msgid "SOUND ENGINEER: "
 msgstr ""

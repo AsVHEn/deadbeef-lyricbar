@@ -33,6 +33,11 @@ struct sync{
 	vector<double> position;
 };
 
+struct sync_view{
+	vector<string_view> synclyrics;
+	vector<double> position;
+};
+
 struct chopped{
 	string past;
 	string present;

@@ -168,11 +168,15 @@ struct parsed_lyrics music_163_lyrics_downloader(string trackid) {
     string_lyrics = replace_string(string_lyrics, "贝斯 : ", _("BASS: "));
     string_lyrics = replace_string(string_lyrics, "附加制作 : ", _("ADDITIONAL PRODUCTION: "));
     string_lyrics = replace_string(string_lyrics, "人声 : ", _("VOICE: "));
+    string_lyrics = replace_string(string_lyrics, "和声 : ", _("HARMONY/BACKING VOCALS: "));
     string_lyrics = replace_string(string_lyrics, "吉他 : ", _("GUITAR: "));
     string_lyrics = replace_string(string_lyrics, "键盘 : ", _("KEYBOARDS: "));
     string_lyrics = replace_string(string_lyrics, "鼓 : ", _("DRUMS: "));
     string_lyrics = replace_string(string_lyrics, "编程 : ", _("PROGRAMMING: "));
     string_lyrics = replace_string(string_lyrics, "混音助理 : ", _("MIX ASSISTANT: "));
+    string_lyrics = replace_string(string_lyrics, "艺术家：", _("ARTIST: "));
+    string_lyrics = replace_string(string_lyrics, "词曲作者：", _("SONGWRITER: "));
+    string_lyrics = replace_string(string_lyrics, "录音工程师：", _("SOUND ENGINEER: "));
     
 	return {string_lyrics, synced};
 }
