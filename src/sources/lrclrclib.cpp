@@ -80,16 +80,17 @@ struct parsed_lyrics lrclib_lyrics_downloader(string trackid) {
   	lyrics = split(text_downloader(slist,url, ""),"{");
 	lyrics_split = split(lyrics[1],"\",\"syncedLyrics\":\"");
 	string string_lyrics = "";
-//	size_t end_pos = raw.find("\",\"");   // another field follows
-//    if (end_pos == string::npos) {
-//        end_pos = raw.find("\"}");        // syncedLyrics was the last field
-//    }
-//    string_lyrics = replace_string(raw.substr(0, end_pos), "\\n", "\n");
-	
+		
 	if (lyrics_split.size() > 1) {
-	    string_lyrics = replace_string(lyrics_split[1], "\\n", "\n");
-        string_lyrics = string_lyrics.substr(0, string_lyrics.size()-2);
-        string_lyrics = replace_string(string_lyrics, "\",\"lyricsfile\":nul", "");
+		size_t end_pos = lyrics_split[1].find("\",\"");   // another field follows
+		if (end_pos == string::npos) {
+			end_pos = lyrics_split[1].find("\"}");        // syncedLyrics was the last field
+		}
+		
+		string_lyrics = replace_string(lyrics_split[1].substr(0, end_pos), "\\n", "\n");
+	//    string_lyrics = replace_string(lyrics_split[1], "\\n", "\n");
+    //    string_lyrics = string_lyrics.substr(0, string_lyrics.size()-2);
+    //    string_lyrics = replace_string(string_lyrics, "\",\"lyricsfile\":nul", "");
     }
     else {
         synced = false;
