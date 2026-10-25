@@ -775,9 +775,7 @@ void	on_Apply_offset_clicked (GtkButton *b) {
 
 gchar *actual_track_time() {
 	gchar *text;
-	deadbeef->pl_lock();
 	float pos = deadbeef->streamer_get_playpos();
-	deadbeef->pl_unlock();
 	int minutes = pos / 60;
 	pos = pos - minutes*60;
 	if (minutes < 10){

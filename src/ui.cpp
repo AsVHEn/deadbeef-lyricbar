@@ -38,6 +38,16 @@ bool isValidHexaCode(string str) {
 
 // "Size" lyrics to be able to make lines "dissapear" on top.
 vector<int> sizelines(DB_playItem_t * track, string lyrics) {
+	// Check if widgets are being destroyed
+
+	// Validate widget pointers
+	if (!lyricView || !lyricbar || !refBuffer) {
+		return vector<int>();
+	}
+
+	if (!is_playing(track)) {
+		return vector<int>();
+	}
 	set_lyrics(track, lyrics,"","","");
 //	std::cout << "Sizelines" << "\n";
 	death_signal = 1;
@@ -47,6 +57,13 @@ vector<int> sizelines(DB_playItem_t * track, string lyrics) {
 
 //	I didn't found another way to be sure lyrics are displayed than wait millisenconds with nanosleep.
 	nanosleep(&tss, NULL);
+
+	// Re-check after sleep
+	if (!refBuffer) {
+		death_signal = 0;
+		return vector<int>();
+	}
+
 	deadbeef->pl_lock();
 	values.push_back(lyricbar->get_allocation().get_height()*(deadbeef->conf_get_int("lyricbar.vpostion", 50))/100);
 	deadbeef->pl_unlock();

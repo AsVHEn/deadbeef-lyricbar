@@ -33,8 +33,8 @@ vector<string> lrclib_get_songs(string song, string artist, string album, int du
 	    url = url + "&duration=" + to_string(duration);
 	}
 	bulk_results = text_downloader(slist, url, "");
-	cout << "BULK RESULTS: ---------------------------------------" << "\n";
-	cout << bulk_results << "\n";
+	//cout << "BULK RESULTS: ---------------------------------------" << "\n";
+	//cout << bulk_results << "\n";
 	
 	if (bulk_results.find(empty_search) == std::string::npos) {
 	  	results = split(bulk_results,"},{");
@@ -74,9 +74,9 @@ struct parsed_lyrics lrclib_lyrics_downloader(string trackid) {
 	slist = curl_slist_append(slist, "app-platform: WebPlayer");
 	slist = curl_slist_append(slist, "User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:128.0) Gecko/20100101 Firefox/128.0");
 	url = "https://lrclib.net/api/get/" + trackid;
-	cout << "url:---------------------     " << url << "\n";
-	cout << "PARSED_LYRICS: ---------------------------------------" << "\n";
-	cout << text_downloader(slist,url, "") << "\n";
+	//cout << "url:---------------------     " << url << "\n";
+	//cout << "PARSED_LYRICS: ---------------------------------------" << "\n";
+	//cout << text_downloader(slist,url, "") << "\n";
   	lyrics = split(text_downloader(slist,url, ""),"{");
 	lyrics_split = split(lyrics[1],"\",\"syncedLyrics\":\"");
 	string string_lyrics = "";
@@ -86,11 +86,10 @@ struct parsed_lyrics lrclib_lyrics_downloader(string trackid) {
 		if (end_pos == string::npos) {
 			end_pos = lyrics_split[1].find("\"}");        // syncedLyrics was the last field
 		}
-		
 		string_lyrics = replace_string(lyrics_split[1].substr(0, end_pos), "\\n", "\n");
-	//    string_lyrics = replace_string(lyrics_split[1], "\\n", "\n");
-    //    string_lyrics = string_lyrics.substr(0, string_lyrics.size()-2);
-    //    string_lyrics = replace_string(string_lyrics, "\",\"lyricsfile\":nul", "");
+		//string_lyrics = replace_string(lyrics_split[1], "\\n", "\n");
+		//string_lyrics = string_lyrics.substr(0, string_lyrics.size()-2);
+		//string_lyrics = replace_string(string_lyrics, "\",\"lyricsfile\":nul", "");
     }
     else {
         synced = false;
@@ -110,7 +109,7 @@ struct parsed_lyrics lrclib(string song,string artist, string album) {
 
 	vector<string> songs_list = lrclib_get_songs(song, artist, album, 0);
 
-	cout << "RESULTS: ------------------------------------------------" << "\n";
+	//cout << "RESULTS: ------------------------------------------------" << "\n";
 	
 	for(long unsigned int i = 0; i < songs_list.size(); i++) {
 	    cout << "Results i: " << songs_list[i] << "\n";

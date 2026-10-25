@@ -185,7 +185,7 @@ void write_synced( DB_playItem_t *it){
 				future.append("\n");
 		}
 	}
-	
+
 	//Add padding variable at beginning of lyrics to show to make scroll with first lines.
 	if (!linessizes.empty() && (size_t)(linessizes[1]+1) < lrc.position.size()){
 	    pad = int((lrc.position[linessizes[1]+1] - pos)/(lrc.position[linessizes[1]+1])*linessizes[0]);
@@ -257,7 +257,9 @@ void chopset_lyrics(DB_playItem_t *track, string lyrics){
 	linescharactersizes.push_back(1);
 	
 	if (track == it){
+	    gdk_threads_enter();
 		linessizes = sizelines(track, prelyrics);
+		gdk_threads_leave();
 	}
 
 	mtx.lock();
@@ -555,8 +557,9 @@ void set_info(DB_playItem_t *track) {
     
     deadbeef->pl_lock();
 	int playcount = deadbeef->playqueue_get_count();
-	int bitrate = deadbeef->streamer_get_apx_bitrate();
 	deadbeef->pl_unlock();
+	
+	int bitrate = deadbeef->streamer_get_apx_bitrate();
 
 	while (bitrate == -1){
 		bitrate = deadbeef->streamer_get_apx_bitrate();
