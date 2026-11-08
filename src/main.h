@@ -6,10 +6,11 @@
 #include <deadbeef/deadbeef.h>
 #include <deadbeef/gtkui_api.h>
 
-extern int death_signal;
 #ifdef __cplusplus
 extern "C" {
-#endif
+    #endif
+
+    void lyricbar_request_shutdown(void);
 
 typedef struct {
     ddb_gtkui_widget_t base;

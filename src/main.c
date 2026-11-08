@@ -59,15 +59,15 @@ static gboolean _pop (GtkTextView *text_view, GtkWidget *popup, gpointer user_da
 static DB_misc_t plugin;
 
 static int lyricbar_disconnect() {
+	lyricbar_request_shutdown();
 	if (gtkui_plugin) {
 		gtkui_plugin->w_unreg_widget(plugin.plugin.id);
 	}
-	death_signal = 1;
 	return 0;
 }
 
 static int lyricbar_stop() {
-	death_signal = 1;
+	lyricbar_request_shutdown();
     gtkui_plugin = NULL;
 	return 0;
 }

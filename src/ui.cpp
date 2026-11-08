@@ -50,7 +50,6 @@ vector<int> sizelines(DB_playItem_t * track, string lyrics) {
 	}
 	set_lyrics(track, lyrics,"","","");
 //	std::cout << "Sizelines" << "\n";
-	death_signal = 1;
 	int sumatory = 0;
 	int temporaly = 0;
 	vector<int>  values;
@@ -60,7 +59,6 @@ vector<int> sizelines(DB_playItem_t * track, string lyrics) {
 
 	// Re-check after sleep
 	if (!refBuffer) {
-		death_signal = 0;
 		return vector<int>();
 	}
 
@@ -85,7 +83,6 @@ vector<int> sizelines(DB_playItem_t * track, string lyrics) {
 		}
 	}
 //	std::cout << "Sizelines finished" << "\n";
-	death_signal = 0;
 
 	return values;
 }
@@ -114,7 +111,6 @@ void set_lyrics(DB_playItem_t *track, string past, string present, string future
 			refBuffer->insert_with_tags(refBuffer->end(),future, tagsNosyncline);
 		}
 		else{
-			death_signal = 1;
 			string error = "Wrong character encoding";
 			refBuffer->insert_with_tags(refBuffer->end(), padding, tagPadding);
 			refBuffer->insert_with_tags(refBuffer->end(),error, tagsSyncline);
@@ -293,7 +289,7 @@ int message_handler(struct ddb_gtkui_widget_s*, uint32_t id, uintptr_t ctx, uint
 			break;
 		case DB_EV_TERMINATE:
 			debug_out << "DEADBEEF CLOSED \n";
-			death_signal = 1;
+			lyricbar_request_shutdown();
 			break;
 //		case DB_EV_TRACKINFOCHANGED:
 //			debug_out << "TRACKINFOCHANGED" << "\n";

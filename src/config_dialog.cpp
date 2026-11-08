@@ -414,7 +414,7 @@ void on_Save_clicked (GtkButton *b, gpointer user_data) {
 		DB_playItem_t *playing_track = deadbeef->streamer_get_playing_track_safe();
 		if (playing_track){
 			if (playing_track == track){
-				death_signal = 1;
+				cancel_synced_lyrics_listener();
 				auto tid = deadbeef->thread_start(update_lyrics, track);
 				deadbeef->thread_detach(tid);
 			}
