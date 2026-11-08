@@ -13,7 +13,7 @@
 #include <vector>
 #include <string>
 #include <pthread.h>
-#include <mutex>
+#include <atomic>
 
 
 using namespace std;
@@ -24,10 +24,14 @@ using namespace std;
 //static const string lyrics_dir = (home_cache ? string(home_cache) : string(getenv("HOME")) + "/.cache") + "/deadbeef/lyrics/";
 
 
-
-mutex mtx;
-
-int death_signal    = 0;
+std::atomic<bool> death_signal{false};
+std::atomic<unsigned> listener_generation{0};
+extern "C" void lyricbar_request_shutdown(void) {
+	death_signal.store(true);
+}
+void cancel_synced_lyrics_listener() {
+	++listener_generation;
+}
 bool lyricstart     = false;
 bool syncedlyrics   = false;
 int previous_pad    = 0;
@@ -219,16 +223,21 @@ void write_synced( DB_playItem_t *it){
 }
 
 // Main loop to update lyrics on real time.
-void thread_listener(DB_playItem_t *track){
-
-	if ((is_playing(track)) && death_signal == 0){
+void thread_listener(DB_playItem_t *track, unsigned generation) {
+	while (!death_signal.load() &&
+		listener_generation.load() == generation &&
+		is_playing(track)) {
 		nanosleep(&ts, NULL);
+
+		if (death_signal.load() ||
+			listener_generation.load() != generation) {
+			break;
+		}
+
 		write_synced(track);
-		thread_listener(track);
 	}
-	else{
-		pthread_exit (NULL);
-	}
+
+	deadbeef->pl_item_unref(track);
 }
 
 // Main loop thread caller.
@@ -236,6 +245,11 @@ void chopset_lyrics(DB_playItem_t *track, string lyrics){
 //	cout << "Chopset lyrics" "\n";
 	lrc = lyric2vector(lyrics);
 	DB_playItem_t *it = deadbeef->streamer_get_playing_track_safe();
+
+	if (!it) {
+		return;
+	}
+
 	float length = deadbeef->pl_get_item_duration(it);
 	
     linescharactersizes.clear();
@@ -262,11 +276,11 @@ void chopset_lyrics(DB_playItem_t *track, string lyrics){
 		gdk_threads_leave();
 	}
 
-	mtx.lock();
-	thread t1(thread_listener, it);
+	deadbeef->pl_item_ref(it);
+	unsigned generation = ++listener_generation;
+	thread t1(thread_listener, it, generation);
 	t1.detach();
 	deadbeef->pl_item_unref(it);
-	mtx.unlock();
 }
 
 //---------------------------------------------------------------------
@@ -395,6 +409,11 @@ string text_downloader(curl_slist *slist, string url, string post) {
 	curl_handle = curl_easy_init();
 	string readBuffer = "";
 	if (curl_handle) {	
+		curl_easy_setopt(curl_handle, CURLOPT_NOPROGRESS, 0L);
+		curl_easy_setopt(curl_handle, CURLOPT_XFERINFOFUNCTION,
+						 [](void *, curl_off_t, curl_off_t, curl_off_t, curl_off_t) -> int {
+							 return death_signal.load() ? 1 : 0;
+						 });
 		curl_easy_setopt(curl_handle, CURLOPT_TIMEOUT, 600);
 		curl_easy_setopt(curl_handle, CURLOPT_SSL_VERIFYPEER, 0);
 		curl_easy_setopt(curl_handle, CURLOPT_SSL_VERIFYHOST, 0);
@@ -560,10 +579,6 @@ void set_info(DB_playItem_t *track) {
 	deadbeef->pl_unlock();
 	
 	int bitrate = deadbeef->streamer_get_apx_bitrate();
-
-	while (bitrate == -1){
-		bitrate = deadbeef->streamer_get_apx_bitrate();
-	}
     
     void *involved_buffer = malloc(100000);
     char *p2 = (char *)involved_buffer;
@@ -630,8 +645,14 @@ void set_info(DB_playItem_t *track) {
 
 
 	info.append("Bitrate: ");
-	info.append(to_string(bitrate));
-	info.append(" kbps\n \n");
+	if (bitrate >= 0) {
+		info.append(to_string(bitrate));
+		info.append(" kbps\n \n");
+	}
+	else {
+		info.append(_("Unknown"));
+		info.append("\n \n");
+	}
 	if (playcount == 1){
 		info.append(_("There is one file in line"));
 		info.append("\n \n");
@@ -721,7 +742,6 @@ void update_lyrics(void *tr) {
 		title  = deadbeef->pl_find_meta(track, "title") ?: _("Unknown Title");
 		deadbeef->pl_unlock();
 	}
-
 
 
 	if (artist && title) {

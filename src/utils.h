@@ -52,6 +52,8 @@ bool is_playing(DB_playItem_t *track);
 
 void update_lyrics(void *tr);
 
+void cancel_synced_lyrics_listener();
+
 struct parsed_lyrics get_lyrics_from_metadata(DB_playItem_t *track);
 
 void save_meta_data(DB_playItem_t *playing_song, struct parsed_lyrics lyrics);
