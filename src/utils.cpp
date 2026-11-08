@@ -300,6 +300,10 @@ void save_meta_data(DB_playItem_t *playing_song, struct parsed_lyrics lyrics){
 	const char *LYRICS = deadbeef->pl_find_meta(playing_song, "LYRICS");
 	const char *UNSYNCEDLYRICS = deadbeef->pl_find_meta(playing_song, "UNSYNCEDLYRICS");
 	deadbeef->pl_unlock();
+
+	// Be sure it's UTF-8.
+	char *safe_lyrics = g_utf8_make_valid(lyrics.lyrics.c_str(), -1);
+
 	if (lyrics.sync == true){	
 		if (SYLT){
 			deadbeef->pl_delete_meta(playing_song, "SYLT");
@@ -308,14 +312,17 @@ void save_meta_data(DB_playItem_t *playing_song, struct parsed_lyrics lyrics){
 		if (LYRICS){
 			deadbeef->pl_delete_meta(playing_song, "LYRICS");
 		}
-		deadbeef->pl_add_meta(playing_song, "LYRICS", lyrics.lyrics.c_str());	
+		deadbeef->pl_add_meta(playing_song, "LYRICS", safe_lyrics);	
 	}
 	else{
 		if (UNSYNCEDLYRICS){
 			deadbeef->pl_delete_meta(playing_song, "UNSYNCEDLYRICS");
 		}
-		deadbeef->pl_add_meta(playing_song, "UNSYNCEDLYRICS", lyrics.lyrics.c_str());	
+		deadbeef->pl_add_meta(playing_song, "UNSYNCEDLYRICS", safe_lyrics);	
 	}
+
+	g_free(safe_lyrics);
+
 	deadbeef->pl_lock(); 
 	const char *dec = deadbeef->pl_find_meta_raw(playing_song, ":DECODER"); 
 	char decoder_id[100];
@@ -343,6 +350,7 @@ void save_meta_data(DB_playItem_t *playing_song, struct parsed_lyrics lyrics){
 		}
 	}
 }
+
 
 // Function to encode characters to URL hexadecimal.
 std::string urlencode(const std::string &s) {

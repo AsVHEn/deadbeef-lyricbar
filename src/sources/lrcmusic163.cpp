@@ -61,7 +61,6 @@ vector<string> music_163_get_songs(string song, string artist) {
 	bulk_results = text_downloader(slist,url, "");
 	
 	if (bulk_results.find(empty_search) == std::string::npos && bulk_results.find(twohundred_search) == std::string::npos){
-            // Divide every songs in subsections by {...},{...},... too.
 		string artist_val;
 		string album_val;
 		
@@ -204,7 +203,9 @@ struct parsed_lyrics music_163_lyrics_downloader(string trackid) {
 	string_lyrics = replace_string(string_lyrics, "大提琴： ", _(" CELLO: "));
 	string_lyrics = replace_string(string_lyrics, "低音 ： ", _(" BASS: "));
 	string_lyrics = replace_string(string_lyrics, "母带重制 ：", _(" REMASTERING: "));
-	string_lyrics = replace_string(string_lyrics, "编曲 : ", _("COMPOSER: "));	  
+	string_lyrics = replace_string(string_lyrics, "编曲 : ", _("COMPOSER: "));
+	string_lyrics = replace_string(string_lyrics, "作词 : ", _("COMPOSITION: "));	
+	string_lyrics = replace_string(string_lyrics, "作词 : ", _("LYRIC WRITTING: "));	
 	string_lyrics = replace_string(string_lyrics, "指挥家 :", _(" CONDUCTOR: "));
 	string_lyrics = replace_string(string_lyrics, "长笛 :", _(" TRAVERSE FLUTE: "));
 	string_lyrics = replace_string(string_lyrics, "合唱团 :", _(" CHOIR: "));
